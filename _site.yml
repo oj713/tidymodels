@@ -5,3 +5,14 @@ navbar:
   left:
     - text: "RSample"
       href: RSample.html
+    - text: "Recipes"
+      href: Recipes.html
+    - text: "Parsnip"
+      href: Parsnip.html
+    - text: "Workflows"
+      href: Workflows.html
+    - text: "Yardstick"
+      href: Yardstick.html
+output:
+  html_document:
+    theme: cosmo
