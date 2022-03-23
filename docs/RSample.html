@@ -277,15 +277,13 @@ $(document).ready(function () {
 
 
 <p><a href="https://rsample.tidymodels.org/" class="uri">https://rsample.tidymodels.org/</a></p>
-<p>RSample contains tools for model resampling.</p>
+<p>When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset resampling and splitting.</p>
 <p><br></p>
 <div id="training-testing-splits" class="section level3">
 <h3>Training / Testing Splits</h3>
 <p>To create a training/testing split using RSample, we can use the <code>initial_split()</code> method. This method generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
-<pre class="r"><code># Using the default r dataset &#39;iris&#39; as an example
-data &lt;- iris
-
-data_split &lt;- initial_split(data, 
+<pre class="r"><code># data_iris is defined in &#39;Overview&#39;
+data_split &lt;- initial_split(data_iris, 
                 prop = 3/4) # proportion of data to use for training
 
 data_split</code></pre>
@@ -297,13 +295,13 @@ data_test &lt;- testing(data_split)
 data_train &lt;- training(data_split)
 
 dim(data_test)</code></pre>
-<pre><code>## [1] 38  5</code></pre>
+<pre><code>## [1] 38  6</code></pre>
 <p><br></p>
 </div>
 <div id="v-fold-cross-validation" class="section level3">
 <h3>V-Fold Cross Validation</h3>
 <p>Use <code>vfold_cv()</code> to create folds in your data. This method returns a table with a data split object and identification variable for each fold.</p>
-<pre class="r"><code>data_folds &lt;- vfold_cv(data, 
+<pre class="r"><code>data_folds &lt;- vfold_cv(data_iris, 
                        v = 5, # number of partitions in dataset 
                        repeats = 1, # times to repeat partitioning
                        strata = Species) # (optional) variable used for stratified sampling
@@ -320,7 +318,7 @@ data_folds</code></pre>
 ## 5 &lt;split [120/30]&gt; Fold5</code></pre>
 <p>We can retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
 <ul>
-<li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code> and can probably used interchangeably.</li>
+<li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code> and can probably be used interchangeably.</li>
 </ul>
 <pre class="r"><code># working with Fold1
 split &lt;- data_folds$splits[[1]]
@@ -336,7 +334,7 @@ identical(testing, assessment)</code></pre>
 <ul>
 <li><a href="https://rsample.tidymodels.org/articles/Working_with_rsets.html" class="uri">https://rsample.tidymodels.org/articles/Working_with_rsets.html</a>
 <ul>
-<li>A helpful example of working with cross validation folds and bootstrap</li>
+<li>A helpful example of working with cross validation folds and bootstrap, which I didn’t cover here.</li>
 </ul></li>
 </ul>
 </div>

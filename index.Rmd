@@ -5,6 +5,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidymodels)
 ```
 
 https://www.tidymodels.org/ 
@@ -27,6 +29,20 @@ Each tab on this site corresponds to a different package from Tidymodels:
 
 <br>
 
+### Dataset ###
+
+The example datasets that are used for examples are defined below. 
+
+`data_iris` is a modified version of the inbuilt `iris` dataset that includes row number as a variable. 
+```{r}
+data_iris <- bind_cols(all_of(iris), 
+                       row = 1:nrow(iris))
+
+head(data_iris)
+```
+
+<br>
+
 ### General Resources ###
 
 * https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/ 
@@ -38,6 +54,6 @@ Each tab on this site corresponds to a different package from Tidymodels:
   
 ### About ###
 
-This site is authored by Omi Johnson and is meant to serve as an introductory guide/walkthrough of Tidymodels. 
+This site is authored by Omi Johnson and is meant to serve as an introductory guide/walkthrough of Tidymodels.
 
 **NOTE**: This is not a comprehensive guide. These notes are incomplete and only mention methods/techniques that the author is familiar with. Descriptions of packages and methods most likely do not include all possible arguments or applications. For a complete list of each package's methods and capabilities, please look at the official documentation. 

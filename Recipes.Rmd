@@ -3,15 +3,96 @@ title: "Recipes"
 output: html_document
 ---
 
-Recipes
+```{r, echo = FALSE, message = FALSE}
+source("setup.R")
 ```
 
-## Including Plots
+https://recipes.tidymodels.org/
 
-You can also embed plots, for example:
+We usually need to manipulate datasets before passing them to a model so that the model can work as effectively as possible. The `recipes` package provides a way to represent pre-processing steps as an object, so that the transformations we do to one dataset can easily be applied to another. 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+<br>
+
+### Recipe Initiation ###
+
+Recipe objects are built in a similar manner to `ggplot2`: that is, we initiate a "blank" recipe object and then add on data transformations via functions.
+
+To initiate a recipe object, we can pass a formula and template dataset to the `recipe()` function. For this example, we are going to start with the `data_split` testing/training split we defined in [RSample](RSample.html).
+
+```{r}
+# note that I could also use data_iris, head(data_iris), or testing(data_split) as the template; what matters is that the names and types of the variables stay the same 
+template <- training(data_split)
+
+iris_recipe <- recipe(Species ~ ., 
+                      data = template)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Alternatively, we can define a recipe object by passing in a template dataset, a list of all variables to be included in a model, and a list of *roles* corresponding to variables (more on this below!). This is preferable for datasets with a high number of variables. 
+
+```{r}
+iris_recipe2 <- recipe (template, 
+                        vars = c("Sepal.Length", "Sepal.Width", 
+                                 "Petal.Length", "Petal.Width", "Species", "row"),
+                        roles = c("predictor", "predictor", 
+                                 "predictor", "predictor", "outcome", "ID"))
+```
+
+<br>
+
+### Roles ###
+
+When we create a recipe, each variable is assigned a *role*, either explicitly by the user or inferred from a formula. A variable can have any role, including outcome, predictor, ID, case weight, stratification variable, etc. The role of a variable determines how it's treated by the model. 
+
+Usually, we only need outcome and predictor roles, which can be assigned automatically via a formula. We can view the roles assigned to variables by a recipe with `summary()`. 
+
+```{r}
+iris_recipe |> summary()
+# building a recipe that only processes one variable - Sepal.Length - and gives it a "predictor" role
+recipe(~ Sepal.Length, data = template) |> summary()
+# building a recipe with two "outcome" variables
+recipe(Species + Sepal.Length ~ ., data = template) |> summary()
+```
+
+Once we've initiated a recipe, we can change the role for a variable using the `update_role()` function. In the case of `data_iris`, we would want to make `row` an ID variable so that it plays no part in the model but stays attached to the original data for later identification/analysis. 
+
+```{r}
+# updating 'row' to an ID variable
+iris_recipe <- iris_recipe |>
+  # note that we could pass multiple variable names in to change multiple roles at once 
+  update_role(row, new_role = "ID") 
+
+summary(iris_recipe)
+```
+
+Once roles are assigned to variables, the `recipes` package includes several helper functions to easily retrieve variables with specific types and/or roles. These functions are: 
+
+* `has_role()` 
+* `has_type()`
+* `all_predictors()`
+* `all_outcomes()`
+* `all_numeric_predictors()`
+* `all_nominal_predictors()`
+* `all_numeric()`
+* `all_nominal()`
+
+Note that factor types are counted as nominal. Also note that some of these functions can only be used within *step functions* - see below. 
+
+<br>
+
+### Step Functions ###
+
+For a full list of step functions, see the official [Function Reference](https://recipes.tidymodels.org/reference/index.html).
+
+<br>
+
+### Prepping the Recipe and Baking Data ###
+
+<br>
+
+### Further Resources ###
+
+* https://www.tidymodels.org/start/recipes/
+  * While also a helpful example of the general tidymodels process, the recipe creation section is detailed and thoroughly explains the reasoning and implementation of each step. 
+* https://recipes.tidymodels.org/articles/Roles.html
+  * further detail about roles in recipes 
+
