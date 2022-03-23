@@ -7,6 +7,37 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-welcome! tidymodels stuff will go here woohoo
+https://www.tidymodels.org/ 
 
-hi yebon :)
+Tidymodels is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation.
+
+To use Tidymodels, simply install and load the `tidymodels` package. The `tidymodels` package loads all of its core modeling packages as well as some helpful `tidyverse` packages such as `dplyr` and `ggplot2`. 
+
+```{r, eval=FALSE}
+library(tidymodels)
+```
+
+Each tab on this site corresponds to a different package from Tidymodels: 
+
+* `RSample` - Re-sample and split training/testing data
+* `Recipes` - Create "pre-processing objects" that apply transformations to data 
+* `Parsnip` - Common, simple interface for model initiation
+* `Workflows` - Bundle recipes and models into a single object
+* `Yardstick` - Evaluate model performance
+
+<br>
+
+### General Resources ###
+
+* https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/ 
+  * A simple walkthrough of some core Tidymodels packages and concepts. 
+* https://www.tmwr.org/
+  * A detailed guidebook of Tidymodels and general modeling concepts 
+  
+<br>
+  
+### About ###
+
+This site is authored by Omi Johnson and is meant to serve as an introductory guide/walkthrough of Tidymodels. 
+
+**NOTE**: This is not a comprehensive guide. These notes are incomplete and only mention methods/techniques that the author is familiar with. Descriptions of packages and methods most likely do not include all possible arguments or applications. For a complete list of each package's methods and capabilities, please look at the official documentation. 

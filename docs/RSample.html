@@ -16,7 +16,7 @@
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/sandstone.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -242,6 +242,9 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
+  <a href="index.html">Overview</a>
+</li>
+<li>
   <a href="RSample.html">RSample</a>
 </li>
 <li>
@@ -273,8 +276,70 @@ $(document).ready(function () {
 </div>
 
 
-<p>RSample</p>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+<p><a href="https://rsample.tidymodels.org/" class="uri">https://rsample.tidymodels.org/</a></p>
+<p>RSample contains tools for model resampling.</p>
+<p><br></p>
+<div id="training-testing-splits" class="section level3">
+<h3>Training / Testing Splits</h3>
+<p>To create a training/testing split using RSample, we can use the <code>initial_split()</code> method. This method generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
+<pre class="r"><code># Using the default r dataset &#39;iris&#39; as an example
+data &lt;- iris
+
+data_split &lt;- initial_split(data, 
+                prop = 3/4) # proportion of data to use for training
+
+data_split</code></pre>
+<pre><code>## &lt;Analysis/Assess/Total&gt;
+## &lt;112/38/150&gt;</code></pre>
+<p>To retrieve the actual training and testing data, use the <code>testing()</code> and <code>training()</code> methods.</p>
+<pre class="r"><code># using training() and testing() to retrieve datasets
+data_test &lt;- testing(data_split)
+data_train &lt;- training(data_split)
+
+dim(data_test)</code></pre>
+<pre><code>## [1] 38  5</code></pre>
+<p><br></p>
+</div>
+<div id="v-fold-cross-validation" class="section level3">
+<h3>V-Fold Cross Validation</h3>
+<p>Use <code>vfold_cv()</code> to create folds in your data. This method returns a table with a data split object and identification variable for each fold.</p>
+<pre class="r"><code>data_folds &lt;- vfold_cv(data, 
+                       v = 5, # number of partitions in dataset 
+                       repeats = 1, # times to repeat partitioning
+                       strata = Species) # (optional) variable used for stratified sampling
+
+data_folds</code></pre>
+<pre><code>## #  5-fold cross-validation using stratification 
+## # A tibble: 5 × 2
+##   splits           id   
+##   &lt;list&gt;           &lt;chr&gt;
+## 1 &lt;split [120/30]&gt; Fold1
+## 2 &lt;split [120/30]&gt; Fold2
+## 3 &lt;split [120/30]&gt; Fold3
+## 4 &lt;split [120/30]&gt; Fold4
+## 5 &lt;split [120/30]&gt; Fold5</code></pre>
+<p>We can retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
+<ul>
+<li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code> and can probably used interchangeably.</li>
+</ul>
+<pre class="r"><code># working with Fold1
+split &lt;- data_folds$splits[[1]]
+
+testing &lt;- testing(split)
+assessment &lt;- assessment(split)
+identical(testing, assessment)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p><br></p>
+</div>
+<div id="further-resources" class="section level3">
+<h3>Further Resources</h3>
+<ul>
+<li><a href="https://rsample.tidymodels.org/articles/Working_with_rsets.html" class="uri">https://rsample.tidymodels.org/articles/Working_with_rsets.html</a>
+<ul>
+<li>A helpful example of working with cross validation folds and bootstrap</li>
+</ul></li>
+</ul>
+</div>
 
 
 

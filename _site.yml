@@ -1,8 +1,10 @@
-name: "My new website"
+name: "Tidymodels"
 output_dir: 'docs'
 navbar:
   title: "Tidymodels @ Bigelow"
   left:
+    - text: "Overview"
+      href: index.html
     - text: "RSample"
       href: RSample.html
     - text: "Recipes"
@@ -15,4 +17,5 @@ navbar:
       href: Yardstick.html
 output:
   html_document:
-    theme: cosmo
+    theme: sandstone
+    toc: false

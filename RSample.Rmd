@@ -3,6 +3,71 @@ title: "RSample"
 output: html_document
 ---
 
-RSample 
+```{r, echo = FALSE, message = FALSE}
+library(tidymodels)
+```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+https://rsample.tidymodels.org/
+
+RSample contains tools for model resampling. 
+
+<br>
+
+### Training / Testing Splits ###
+
+To create a training/testing split using RSample, we can use the `initial_split()` method. This method generates an `rsplit` object that contains partitioning information for the data.  
+
+```{r}
+# Using the default r dataset 'iris' as an example
+data <- iris
+
+data_split <- initial_split(data, 
+                prop = 3/4) # proportion of data to use for training
+
+data_split
+```
+
+To retrieve the actual training and testing data, use the `testing()` and `training()` methods. 
+
+```{r}
+# using training() and testing() to retrieve datasets
+data_test <- testing(data_split)
+data_train <- training(data_split)
+
+dim(data_test)
+```
+
+<br>
+
+### V-Fold Cross Validation ### 
+
+Use `vfold_cv()` to create folds in your data. This method returns a table with a data split object and identification variable for each fold. 
+
+```{r}
+data_folds <- vfold_cv(data, 
+                       v = 5, # number of partitions in dataset 
+                       repeats = 1, # times to repeat partitioning
+                       strata = Species) # (optional) variable used for stratified sampling
+
+data_folds
+```
+
+We can retrieve data from a specific split object using `analysis()` and `assessment()`.
+
+* **Note:** although `analysis()` and `assessment()` support additional arguments, when simply passed an `rsplit` object they act identically to `training()` and `testing()` and can probably used interchangeably. 
+
+```{r}
+# working with Fold1
+split <- data_folds$splits[[1]]
+
+testing <- testing(split)
+assessment <- assessment(split)
+identical(testing, assessment)
+```
+
+<br>
+
+### Further Resources ###
+
+* https://rsample.tidymodels.org/articles/Working_with_rsets.html
+  *  A helpful example of working with cross validation folds and bootstrap

@@ -16,7 +16,7 @@
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/sandstone.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -242,6 +242,9 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
+  <a href="index.html">Overview</a>
+</li>
+<li>
   <a href="RSample.html">RSample</a>
 </li>
 <li>
@@ -273,8 +276,38 @@ $(document).ready(function () {
 </div>
 
 
-<p>welcome! tidymodels stuff will go here woohoo</p>
-<p>hi yebon :)</p>
+<p><a href="https://www.tidymodels.org/" class="uri">https://www.tidymodels.org/</a></p>
+<p>Tidymodels is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation.</p>
+<p>To use Tidymodels, simply install and load the <code>tidymodels</code> package. The <code>tidymodels</code> package loads all of its core modeling packages as well as some helpful <code>tidyverse</code> packages such as <code>dplyr</code> and <code>ggplot2</code>.</p>
+<pre class="r"><code>library(tidymodels)</code></pre>
+<p>Each tab on this site corresponds to a different package from Tidymodels:</p>
+<ul>
+<li><code>RSample</code> - Re-sample and split training/testing data</li>
+<li><code>Recipes</code> - Create “pre-processing objects” that apply transformations to data</li>
+<li><code>Parsnip</code> - Common, simple interface for model initiation</li>
+<li><code>Workflows</code> - Bundle recipes and models into a single object</li>
+<li><code>Yardstick</code> - Evaluate model performance</li>
+</ul>
+<p><br></p>
+<div id="general-resources" class="section level3">
+<h3>General Resources</h3>
+<ul>
+<li><a href="https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/" class="uri">https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/</a>
+<ul>
+<li>A simple walkthrough of some core Tidymodels packages and concepts.</li>
+</ul></li>
+<li><a href="https://www.tmwr.org/" class="uri">https://www.tmwr.org/</a>
+<ul>
+<li>A detailed guidebook of Tidymodels and general modeling concepts</li>
+</ul></li>
+</ul>
+<p><br></p>
+</div>
+<div id="about" class="section level3">
+<h3>About</h3>
+<p>This site is authored by Omi Johnson and is meant to serve as an introductory guide/walkthrough of Tidymodels.</p>
+<p><strong>NOTE</strong>: This is not a comprehensive guide. These notes are incomplete and only mention methods/techniques that the author is familiar with. Descriptions of packages and methods most likely do not include all possible arguments or applications. For a complete list of each package’s methods and capabilities, please look at the official documentation.</p>
+</div>
 
 
 
