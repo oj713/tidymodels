@@ -281,7 +281,7 @@ $(document).ready(function () {
 <p><br></p>
 <div id="recipe-initiation" class="section level3">
 <h3>Recipe Initiation</h3>
-<p>Recipe objects are built in a similar manner to <code>ggplot2</code>: that is, we initiate a “blank” recipe object and then add on data transformations via functions.</p>
+<p>Recipe objects are built iteratively: that is, we create an initial “blank” recipe object and then add on data transformations via functions.</p>
 <p>To initiate a recipe object, we can pass a formula and template dataset to the <code>recipe()</code> function. For this example, we are going to start with the <code>data_split</code> testing/training split we defined in <a href="RSample.html">RSample</a>.</p>
 <pre class="r"><code># note that I could also use data_iris, head(data_iris), or testing(data_split) as the template; what matters is that the names and types of the variables stay the same 
 template &lt;- training(data_split)
@@ -354,7 +354,7 @@ summary(iris_recipe)</code></pre>
 <li><code>all_numeric()</code></li>
 <li><code>all_nominal()</code></li>
 </ul>
-<p>Note that factor types are counted as nominal. Also note that some of these functions can only be used within <em>step functions</em> - see below.</p>
+<p>Note that factor types are counted as nominal. Also note that some of these functions can only be used within <em>step functions</em>.</p>
 <p><br></p>
 </div>
 <div id="step-functions" class="section level3">
@@ -371,11 +371,11 @@ summary(iris_recipe)</code></pre>
 <ul>
 <li><a href="https://www.tidymodels.org/start/recipes/" class="uri">https://www.tidymodels.org/start/recipes/</a>
 <ul>
-<li>While also a helpful example of the general tidymodels process, the recipe creation section is detailed and thoroughly explains the reasoning and implementation of each step.</li>
+<li>A general walkthrough of the tidymodels process that pays special attention to the creation and application of recipes.</li>
 </ul></li>
 <li><a href="https://recipes.tidymodels.org/articles/Roles.html" class="uri">https://recipes.tidymodels.org/articles/Roles.html</a>
 <ul>
-<li>further detail about roles in recipes</li>
+<li>Further detail about roles in recipes</li>
 </ul></li>
 </ul>
 </div>

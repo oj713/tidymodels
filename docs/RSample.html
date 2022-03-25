@@ -281,7 +281,7 @@ $(document).ready(function () {
 <p><br></p>
 <div id="training-testing-splits" class="section level3">
 <h3>Training / Testing Splits</h3>
-<p>To create a training/testing split using RSample, we can use the <code>initial_split()</code> method. This method generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
+<p>To create a training/testing split using RSample, we can use the <code>initial_split()</code> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
 <pre class="r"><code># data_iris is defined in &#39;Overview&#39;
 data_split &lt;- initial_split(data_iris, 
                 prop = 3/4) # proportion of data to use for training
@@ -289,7 +289,7 @@ data_split &lt;- initial_split(data_iris,
 data_split</code></pre>
 <pre><code>## &lt;Analysis/Assess/Total&gt;
 ## &lt;112/38/150&gt;</code></pre>
-<p>To retrieve the actual training and testing data, use the <code>testing()</code> and <code>training()</code> methods.</p>
+<p>To retrieve the actual training and testing data, use the <code>testing()</code> and <code>training()</code> functions</p>
 <pre class="r"><code># using training() and testing() to retrieve datasets
 data_test &lt;- testing(data_split)
 data_train &lt;- training(data_split)
@@ -300,7 +300,7 @@ dim(data_test)</code></pre>
 </div>
 <div id="v-fold-cross-validation" class="section level3">
 <h3>V-Fold Cross Validation</h3>
-<p>Use <code>vfold_cv()</code> to create folds in your data. This method returns a table with a data split object and identification variable for each fold.</p>
+<p>Use <code>vfold_cv()</code> to create folds in your data. This function returns a table with a data split object and identification variable for each fold.</p>
 <pre class="r"><code>data_folds &lt;- vfold_cv(data_iris, 
                        v = 5, # number of partitions in dataset 
                        repeats = 1, # times to repeat partitioning
@@ -334,7 +334,7 @@ identical(testing, assessment)</code></pre>
 <ul>
 <li><a href="https://rsample.tidymodels.org/articles/Working_with_rsets.html" class="uri">https://rsample.tidymodels.org/articles/Working_with_rsets.html</a>
 <ul>
-<li>A helpful example of working with cross validation folds and bootstrap, which I didn’t cover here.</li>
+<li>A helpful example of working with cross validation folds. Also touches on using RSample for the bootstrap method, which isn’t touched on here.</li>
 </ul></li>
 </ul>
 </div>

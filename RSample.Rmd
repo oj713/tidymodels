@@ -15,7 +15,7 @@ When building a model, the source dataset usually needs to be split up somehow. 
 
 ### Training / Testing Splits ###
 
-To create a training/testing split using RSample, we can use the `initial_split()` method. This method generates an `rsplit` object that contains partitioning information for the data.  
+To create a training/testing split using RSample, we can use the `initial_split()` function. This function generates an `rsplit` object that contains partitioning information for the data.  
 
 ```{r}
 # data_iris is defined in 'Overview'
@@ -25,7 +25,7 @@ data_split <- initial_split(data_iris,
 data_split
 ```
 
-To retrieve the actual training and testing data, use the `testing()` and `training()` methods. 
+To retrieve the actual training and testing data, use the `testing()` and `training()` functions 
 
 ```{r}
 # using training() and testing() to retrieve datasets
@@ -39,7 +39,7 @@ dim(data_test)
 
 ### V-Fold Cross Validation ### 
 
-Use `vfold_cv()` to create folds in your data. This method returns a table with a data split object and identification variable for each fold. 
+Use `vfold_cv()` to create folds in your data. This function returns a table with a data split object and identification variable for each fold. 
 
 ```{r}
 data_folds <- vfold_cv(data_iris, 
@@ -68,4 +68,4 @@ identical(testing, assessment)
 ### Further Resources ###
 
 * https://rsample.tidymodels.org/articles/Working_with_rsets.html
-  *  A helpful example of working with cross validation folds and bootstrap, which I didn't cover here.
+  *  A helpful example of working with cross validation folds. Also touches on using RSample for the bootstrap method, which isn't touched on here. 

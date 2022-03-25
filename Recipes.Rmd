@@ -15,7 +15,7 @@ We usually need to manipulate datasets before passing them to a model so that th
 
 ### Recipe Initiation ###
 
-Recipe objects are built in a similar manner to `ggplot2`: that is, we initiate a "blank" recipe object and then add on data transformations via functions.
+Recipe objects are built iteratively: that is, we create an initial "blank" recipe object and then add on data transformations via functions. 
 
 To initiate a recipe object, we can pass a formula and template dataset to the `recipe()` function. For this example, we are going to start with the `data_split` testing/training split we defined in [RSample](RSample.html).
 
@@ -75,7 +75,7 @@ Once roles are assigned to variables, the `recipes` package includes several hel
 * `all_numeric()`
 * `all_nominal()`
 
-Note that factor types are counted as nominal. Also note that some of these functions can only be used within *step functions* - see below. 
+Note that factor types are counted as nominal. Also note that some of these functions can only be used within *step functions*. 
 
 <br>
 
@@ -92,7 +92,7 @@ For a full list of step functions, see the official [Function Reference](https:/
 ### Further Resources ###
 
 * https://www.tidymodels.org/start/recipes/
-  * While also a helpful example of the general tidymodels process, the recipe creation section is detailed and thoroughly explains the reasoning and implementation of each step. 
+  * A general walkthrough of the tidymodels process that pays special attention to the creation and application of recipes. 
 * https://recipes.tidymodels.org/articles/Roles.html
-  * further detail about roles in recipes 
+  * Further detail about roles in recipes 
 
