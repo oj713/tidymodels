@@ -17,5 +17,5 @@ navbar:
       href: Yardstick.html
 output:
   html_document:
-    theme: sandstone
+    theme: cosmo
     toc: false

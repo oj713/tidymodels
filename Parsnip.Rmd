@@ -7,7 +7,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Parsnip!
 
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+### Further Resources ###
+
+* https://www.tmwr.org/models.html
+  * Excellent overview of `parsnip`, especially regarding how it compares to other modelling packages.

@@ -20,17 +20,17 @@ Recipe objects are built iteratively: that is, we create an initial "blank" reci
 To initiate a recipe object, we can pass a formula and template dataset to the `recipe()` function. For this example, we are going to start with the `data_split` testing/training split we defined in [RSample](RSample.html).
 
 ```{r}
-# note that I could also use data_iris, head(data_iris), or testing(data_split) as the template; what matters is that the names and types of the variables stay the same 
-template <- training(data_split)
+# note that I could also use data_iris, head(data_iris), data_split, etc. as the template; what matters is that the names and types of the variables stay the same 
+template_data <- training(data_split)
 
 iris_recipe <- recipe(Species ~ ., 
-                      data = template)
+                      data = template_data)
 ```
 
 Alternatively, we can define a recipe object by passing in a template dataset, a list of all variables to be included in a model, and a list of *roles* corresponding to variables (more on this below!). This is preferable for datasets with a high number of variables. 
 
 ```{r}
-iris_recipe2 <- recipe (template, 
+iris_recipe2 <- recipe (template_data, 
                         vars = c("Sepal.Length", "Sepal.Width", 
                                  "Petal.Length", "Petal.Width", "Species", "row"),
                         roles = c("predictor", "predictor", 
@@ -48,9 +48,9 @@ Usually, we only need outcome and predictor roles, which can be assigned automat
 ```{r}
 iris_recipe |> summary()
 # building a recipe that only processes one variable - Sepal.Length - and gives it a "predictor" role
-recipe(~ Sepal.Length, data = template) |> summary()
+recipe(~ Sepal.Length, data = template_data) |> summary()
 # building a recipe with two "outcome" variables
-recipe(Species + Sepal.Length ~ ., data = template) |> summary()
+recipe(Species + Sepal.Length ~ ., data = template_data) |> summary()
 ```
 
 Once we've initiated a recipe, we can change the role for a variable using the `update_role()` function. In the case of `data_iris`, we would want to make `row` an ID variable so that it plays no part in the model but stays attached to the original data for later identification/analysis. 
@@ -64,7 +64,7 @@ iris_recipe <- iris_recipe |>
 summary(iris_recipe)
 ```
 
-Once roles are assigned to variables, the `recipes` package includes several helper functions to easily retrieve variables with specific types and/or roles. These functions are: 
+Once roles are assigned to variables, the `recipes` package includes several **selector functions** to easily retrieve variables with specific types and/or roles. These functions are: 
 
 * `has_role()` 
 * `has_type()`
@@ -81,11 +81,53 @@ Note that factor types are counted as nominal. Also note that some of these func
 
 ### Step Functions ###
 
-For a full list of step functions, see the official [Function Reference](https://recipes.tidymodels.org/reference/index.html).
+Step functions are used to specify the data transformations that we would like to include in a recipe. Each step function represents a unique data transformation and returns a recipe object with the transformation added. 
+
+Step functions take the following arguments:
+
+* **A recipe object**
+* **A selector function** or list of variables to which the step will be applied
+* **Optional additional specifiers** 
+
+Some examples of step functions include: 
+
+* `step_corr()` - removes highly correlated variables
+* `step_log()` - log transforms data 
+* `step_center()` - centers variables to have a mean of 0
+* `step_scale()` - scales variables to have a standard deviation of 1 
+* `step_zv()` / `step_nzv()` - removes zero / near-zero variance predictors
+* `step_naomit()` - removes missing values
+* `step_dummy()` - converts nominal variables to *dummy/indicator* variables, which is useful when a model can only process numeric data. Note that some `parsnip` models, such as GAMs, will do this for you automatically. 
+
+There are also several step functions that act as wrappers for common `dplyr` operations:
+
+* `step_select()`
+* `step_filter()`
+* `step_arrange()`
+* `step_sample()`
+* `step_slice()`
+* `step_rename()` and `step_rename_at()`
+* `step_mutate()` and `step_mutate_at()` - note that the new variables created by these operations have their *roles* specified within the functions' arguments. 
+
+```{r}
+# adding some steps to our iris_recipe object
+iris_recipe <- iris_recipe |>
+  step_corr(all_numeric_predictors()) |>
+  # step_normalize() applies both step_center() and step_scale()
+  step_normalize(all_numeric_predictors()) |>
+  # renaming the row variable 
+  step_rename(Row = row)
+```
+
+Step functions can also cover much more complex operations. For a full list of step functions, see the official [Function Reference](https://recipes.tidymodels.org/reference/index.html).
+
+**Note:** Since step functions are applied successively to a recipe object, order matters. The [Recipes Website](https://recipes.tidymodels.org/articles/Ordering.html) has some tips and tricks for how to handle ordering step functions. 
 
 <br>
 
-### Prepping the Recipe and Baking Data ###
+### Prepping the Recipe and Baking New Data ###
+
+~~~~~~~~~~~~
 
 <br>
 

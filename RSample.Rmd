@@ -68,4 +68,4 @@ identical(testing, assessment)
 ### Further Resources ###
 
 * https://rsample.tidymodels.org/articles/Working_with_rsets.html
-  *  A helpful example of working with cross validation folds. Also touches on using RSample for the bootstrap method, which isn't touched on here. 
+  *  A helpful example of working with cross validation folds. Also covers using RSample for the bootstrap method, which isn't touched on here. 

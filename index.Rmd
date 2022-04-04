@@ -11,7 +11,7 @@ library(tidymodels)
 
 https://www.tidymodels.org/ 
 
-Tidymodels is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation.
+Tidymodels is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the [pipe operator](https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64).
 
 To use Tidymodels, simply install and load the `tidymodels` package. The `tidymodels` package loads all of its core modeling packages as well as some helpful `tidyverse` packages such as `dplyr` and `ggplot2`. 
 
