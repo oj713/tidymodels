@@ -27,11 +27,13 @@ Each tab on this site corresponds to a different package from Tidymodels:
 * `Workflows` - Bundle recipes and models into a single object
 * `Yardstick` - Evaluate model performance
 
+**Note:** [`tune`](https://tune.tidymodels.org/), [`broom`](https://broom.tidymodels.org/), and [`dials`](https://dials.tidymodels.org/) are additional Tidymodels packages designed to further define and organize models/recipes. They are not covered here.  
+
 <br>
 
 ### Dataset ###
 
-The example datasets that are used for examples are defined below. 
+This site introduces the tidymodels packages by walking through the complete modelling process with an example dataset, defined below. 
 
 `data_iris` is a modified version of the inbuilt `iris` dataset that includes row number as a variable. 
 ```{r}
@@ -40,6 +42,8 @@ data_iris <- bind_cols(all_of(iris),
 
 head(data_iris)
 ```
+
+Using this example dataset, we will predict `Species` based on the other variables (row is an identification variable and not used as a predictor). 
 
 <br>
 

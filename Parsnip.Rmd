@@ -5,11 +5,124 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+source("setup.R")
+```
+
+https://parsnip.tidymodels.org/
+
+When building a model for your dataset, there are a wide variety of models and model packages that each have their own unique parameters and specifications. `parsnip` provides a unified, simple interface for model creation so that you can easily swap between models without worrying about minor syntax changes. 
+
+<br>
+
+### Initializing a Model ### 
+
+A `parsnip` model is built by defining an initial model object, setting its parameters/engine, and then fitting the model to data. Each type of supported model has its own initializing function. 
+
+For example, suppose we wanted to create a linear regression model. To initiate this model, we would call the `linear_reg()` function. 
+
+```{r} 
+lr <- linear_reg()
+```
+
+Alternatively, to initialize a random forest model we would use the `rand_forest()` function. 
+
+```{r}
+rf <- rand_forest()
+```
+
+Other models supported include logistic regressions, boosted trees, k nearest neighbors, and more. For a full list of supported models see the official [Function Reference](https://parsnip.tidymodels.org/reference/index.html).
+
+<br>
+
+### Setting Parameters ###
+
+Once we've initialized a model, we can set its specifications/parameters. 
+
+* **`set_mode()`** determines whether the model is a classification or regression model. Not every model has both options -- for example, `linear_reg()` only supports regression while `logistic_reg()` only supports classification. 
+
+* **`set_args()`** sets parameters specific to the initialized model. The names of these arguments are standardized so that similar parameters across models have the same name -- for example, `penalty` is the name of the regularization argument, if a model has one. 
+
+```{r modeargs}
+# setting mode and parameters for both of our example models 
+# note that you don't need to set every model parameter if you're happy with the defaults
+lr <- lr |>
+  set_mode("regression") |> 
+  set_args(penalty = NULL) 
+
+rf <- rf |>
+  set_mode("classification") |>
+  set_args(trees = 500)
+```
+
+* **`set_engine()`** determines the model *engine*, or package that will handle model creation. For many models, there are multiple packages that can run that model, each with their own unique syntax and interface. `parsnip` regularizes the interface, but doesn't replace the modeling package -- meaning that we must specify which package we'd like to use. If later on we'd like to switch engines, simply change the argument for `set_engine()`. 
+  * you might have to install the package for the desired engine. 
+  * use `show_engines()` to retrieve a list of all supported engines for a model. Some engines require a `parsnip` extension package and are not shown. 
+
+```{r engines}
+# what engines are available for random forest?
+show_engines("rand_forest")
+
+# setting the engine to randomForest
+rf <- rf |>
+  set_engine("randomForest")
+
+# if I want to change the engine, I could simply call set_engine() again
+rf <- rf |>
+  set_engine("ranger")
+
+# call the model to take a look at its specifications 
+rf
+```
+
+**Note**: These arguments can also be specified within the initial model call. However, setting them with separate functions enhances readability and creates a more flexible interface. 
+
+```{r}
+# defining all parameters in initial function call 
+rf2 <- rand_forest(mode = "classification", 
+                   engine = "ranger", 
+                   trees = 500)
+
+#identical to rf
+rf2
+```
+
+<br>
+
+### Fitting and Predicting ###
+
+Once a model has been initialized and defined, we can execute the model on our prepped training data using the `fit()` function. `fit()` takes in a formula and a model object and returns a trained model. 
+
+We will use the `prepped_training` and `prepped_testing` datasets defined in the [Recipes Tutorial](Recipes.html). 
+
+```{r}
+# fitting our random forest model to our training data
+rf_fit <- rf |>
+  fit(Species ~ ., data = prepped_training)
+
+# taking a look at our fitted model
+rf_fit
 ```
 
 
+In order to generate predictions from new data, pass the fitted model and a dataset to either the `predict()` or `augment()` functions. `predict()` will return a tibble of predictions, and `augment()` will bind the new prediction columns to the input data. 
 
 
+```{r}
+# generating prediction class
+predict(rf_fit, prepped_testing) |>
+  head()
+
+# note the use of type = prob to retrieve probabilities for each class
+predict(rf_fit, prepped_testing, type = "prob") |>
+  head()
+
+# augment binds prediction class and prediction probabilities to original data
+predictions <- augment(rf_fit, prepped_testing) |>
+  glimpse()
+```
+
+<br>
 
 ### Further Resources ###
 

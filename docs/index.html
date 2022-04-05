@@ -288,10 +288,11 @@ $(document).ready(function () {
 <li><code>Workflows</code> - Bundle recipes and models into a single object</li>
 <li><code>Yardstick</code> - Evaluate model performance</li>
 </ul>
+<p><strong>Note:</strong> <a href="https://tune.tidymodels.org/"><code>tune</code></a>, <a href="https://broom.tidymodels.org/"><code>broom</code></a>, and <a href="https://dials.tidymodels.org/"><code>dials</code></a> are additional Tidymodels packages designed to further define and organize models/recipes. They are not covered here.</p>
 <p><br></p>
 <div id="dataset" class="section level3">
 <h3>Dataset</h3>
-<p>The example datasets that are used for examples are defined below.</p>
+<p>This site introduces the tidymodels packages by walking through the complete modelling process with an example dataset, defined below.</p>
 <p><code>data_iris</code> is a modified version of the inbuilt <code>iris</code> dataset that includes row number as a variable.</p>
 <pre class="r"><code>data_iris &lt;- bind_cols(all_of(iris), 
                        row = 1:nrow(iris))
@@ -304,6 +305,7 @@ head(data_iris)</code></pre>
 ## 4          4.6         3.1          1.5         0.2  setosa   4
 ## 5          5.0         3.6          1.4         0.2  setosa   5
 ## 6          5.4         3.9          1.7         0.4  setosa   6</code></pre>
+<p>Using this example dataset, we will predict <code>Species</code> based on the other variables (row is an identification variable and not used as a predictor).</p>
 <p><br></p>
 </div>
 <div id="general-resources" class="section level3">

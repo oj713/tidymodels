@@ -17,10 +17,10 @@ We usually need to manipulate datasets before passing them to a model so that th
 
 Recipe objects are built iteratively: that is, we create an initial "blank" recipe object and then add on data transformations via functions. 
 
-To initiate a recipe object, we can pass a formula and template dataset to the `recipe()` function. For this example, we are going to start with the `data_split` testing/training split we defined in [RSample](RSample.html).
+To initiate a recipe object, we can pass a formula and template dataset to the `recipe()` function. For this example, we are going to start with the `data_split` testing/training split we defined in the [RSample Tutorial](RSample.html).
 
 ```{r}
-# note that I could also use data_iris, head(data_iris), data_split, etc. as the template; what matters is that the names and types of the variables stay the same 
+# note that I could also use data_iris, head(data_iris), data_split, etc. as the template; what matters is that the names and types of the variables stay the same. For larger datasets, using head() is preferable.
 template_data <- training(data_split)
 
 iris_recipe <- recipe(Species ~ ., 
@@ -117,6 +117,9 @@ iris_recipe <- iris_recipe |>
   step_normalize(all_numeric_predictors()) |>
   # renaming the row variable 
   step_rename(Row = row)
+
+# calling the recipe prints its information - notice the steps listed
+iris_recipe
 ```
 
 Step functions can also cover much more complex operations. For a full list of step functions, see the official [Function Reference](https://recipes.tidymodels.org/reference/index.html).
@@ -127,7 +130,36 @@ Step functions can also cover much more complex operations. For a full list of s
 
 ### Prepping the Recipe and Baking New Data ###
 
-~~~~~~~~~~~~
+Once we've added all the desired roles and steps to a recipe, we use the `prep()` function to "train" the recipe on the template data -- that is, we use the template data to estimate the parameters/quantities required by steps. 
+
+```{r}
+# preparing the recipe using prep() 
+iris_recipe_prepped <- iris_recipe |>
+  prep()
+
+# note that the steps are now trained for the template dataset
+iris_recipe_prepped
+```
+
+Finally, we can use the prepped recipe to process data. Use `juice()` to extract the processed template data from a recipe, and use `bake()` to process new data.  
+
+**Note**: `prep()` **must** be called before using a recipe to bake data - otherwise, the steps are not trained and the code will error.
+
+```{r, error = TRUE}
+# attempting to process data before calling prep(), causing an error
+bake(iris_recipe, testing(data_split))
+
+# extracting the training data using `juice()` 
+prepped_training <- juice(iris_recipe_prepped)
+head(prepped_training)
+
+# taking a glimpse at an unprocessed data set
+head(testing(data_split))
+
+# processing the dataset using bake()
+prepped_testing <- bake(iris_recipe_prepped, testing(data_split))
+head(prepped_testing)
+```
 
 <br>
 
