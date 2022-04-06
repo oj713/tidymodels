@@ -21,11 +21,13 @@ library(tidymodels)
 
 Each tab on this site corresponds to a different package from Tidymodels: 
 
-* `RSample` - Re-sample and split training/testing data
-* `Recipes` - Create "pre-processing objects" that apply transformations to data 
-* `Parsnip` - Common, simple interface for model initiation
-* `Workflows` - Bundle recipes and models into a single object
-* `Yardstick` - Evaluate model performance
+* [`RSample`](RSample.html) - Re-sample and split training/testing data
+* [`Recipes`](Recipes.html) - Create "pre-processing objects" that apply transformations to data 
+* [`Parsnip`](Parsnip.html) - Common, simple interface for model initiation
+* [`Workflows`](Workflows.html) - Bundle recipes and models into a single object
+* [`Yardstick`](Yardstick.html) - Evaluate model performance
+
+The [Code](Code.html) page contains the complete code that makes up the modeling example walked through on each tab. 
 
 **Note:** [`tune`](https://tune.tidymodels.org/), [`broom`](https://broom.tidymodels.org/), and [`dials`](https://dials.tidymodels.org/) are additional Tidymodels packages designed to further define and organize models/recipes. They are not covered here.  
 
@@ -53,6 +55,8 @@ Using this example dataset, we will predict `Species` based on the other variabl
   * A simple walkthrough of some core Tidymodels packages and concepts. 
 * https://www.tmwr.org/
   * A detailed guidebook of Tidymodels and general modeling concepts 
+* https://www.tidymodels.org/start/tuning/
+  * although the `tune` package isn't covered here (yet), it contains helpful functions to help optimize hyperparameters for models. This is a helpful introductory tutorial for `tune` that explores some of its capability. 
   
 <br>
   

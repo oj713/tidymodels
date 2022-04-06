@@ -259,6 +259,9 @@ $(document).ready(function () {
 <li>
   <a href="Yardstick.html">Yardstick</a>
 </li>
+<li>
+  <a href="Code.html">Code</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -294,7 +297,7 @@ $(document).ready(function () {
 <p>Once we’ve initialized a model, we can set its specifications/parameters.</p>
 <ul>
 <li><p><strong><code>set_mode()</code></strong> determines whether the model is a classification or regression model. Not every model has both options – for example, <code>linear_reg()</code> only supports regression while <code>logistic_reg()</code> only supports classification.</p></li>
-<li><p><strong><code>set_args()</code></strong> sets parameters specific to the initialized model. The names of these arguments are standardized so that similar parameters across models have the same name – for example, <code>penalty</code> is the name of the regularization argument, if a model has one.</p></li>
+<li><p><strong><code>set_args()</code></strong> sets parameters specific to the model type. The names of these arguments are standardized so that similar parameters across models have the same name – for example, <code>penalty</code> is the name of the regularization argument, if a model has one.</p></li>
 </ul>
 <pre class="r"><code># setting mode and parameters for both of our example models 
 # note that you don&#39;t need to set every model parameter if you&#39;re happy with the defaults
@@ -367,7 +370,7 @@ rf_fit &lt;- rf |&gt;
 rf_fit</code></pre>
 <pre><code>## parsnip model object
 ## 
-## Fit time:  13ms 
+## Fit time:  11ms 
 ## Ranger result
 ## 
 ## Call:
@@ -381,7 +384,8 @@ rf_fit</code></pre>
 ## Target node size:                 10 
 ## Variable importance mode:         none 
 ## Splitrule:                        gini 
-## OOB prediction error (Brier s.):  0.008329416</code></pre>
+## OOB prediction error (Brier s.):  0.006371494</code></pre>
+<p><strong>Note:</strong> If a model uses a specialized formula that specifies model structure as well as terms (eg. GAMs), you can use it for <code>fit()</code>.</p>
 <p>In order to generate predictions from new data, pass the fitted model and a dataset to either the <code>predict()</code> or <code>augment()</code> functions. <code>predict()</code> will return a tibble of predictions, and <code>augment()</code> will bind the new prediction columns to the input data.</p>
 <pre class="r"><code># generating prediction class
 predict(rf_fit, prepped_testing) |&gt;
@@ -401,26 +405,24 @@ predict(rf_fit, prepped_testing, type = &quot;prob&quot;) |&gt;
 <pre><code>## # A tibble: 6 × 3
 ##   .pred_setosa .pred_versicolor .pred_virginica
 ##          &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
-## 1        0.998           0.0012          0.0012
-## 2        1               0               0     
-## 3        1               0               0     
-## 4        0.998           0.0012          0.0012
-## 5        1               0               0     
-## 6        1               0               0</code></pre>
+## 1        1              0               0      
+## 2        1              0               0      
+## 3        0.996          0.00366         0      
+## 4        1              0               0      
+## 5        0.953          0.046           0.00111
+## 6        0.971          0.028           0.00111</code></pre>
 <pre class="r"><code># augment binds prediction class and prediction probabilities to original data
-predictions &lt;- augment(rf_fit, prepped_testing) |&gt;
-  glimpse()</code></pre>
-<pre><code>## Rows: 38
-## Columns: 9
-## $ Sepal.Length     &lt;dbl&gt; -1.093722915, -0.487902111, -1.093722915, -1.214887075, -0.851394593, -0.851394593, -0.730…
-## $ Sepal.Width      &lt;dbl&gt; -0.17247816, 1.84912629, 0.05214456, -0.17247816, 1.39988085, 0.50138999, 0.72601271, 0.27…
-## $ Petal.Width      &lt;dbl&gt; -1.25786881, -0.99913363, -1.38723640, -1.38723640, -0.99913363, -0.86976604, -1.25786881,…
-## $ Row              &lt;int&gt; 2, 6, 10, 13, 22, 24, 29, 36, 46, 47, 51, 54, 58, 59, 74, 75, 76, 81, 82, 83, 87, 89, 92, …
-## $ Species          &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, versicolor…
-## $ .pred_class      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, versicolor…
-## $ .pred_setosa     &lt;dbl&gt; 0.997600000, 1.000000000, 1.000000000, 0.997600000, 1.000000000, 1.000000000, 1.000000000,…
-## $ .pred_versicolor &lt;dbl&gt; 0.001200000, 0.000000000, 0.000000000, 0.001200000, 0.000000000, 0.000000000, 0.000000000,…
-## $ .pred_virginica  &lt;dbl&gt; 0.001200000, 0.000000000, 0.000000000, 0.001200000, 0.000000000, 0.000000000, 0.000000000,…</code></pre>
+augment(rf_fit, prepped_testing) |&gt;
+  head()</code></pre>
+<pre><code>## # A tibble: 6 × 9
+##   Sepal.Length Sepal.Width Petal.Width   Row Species .pred_class .pred_setosa .pred_versicolor .pred_virginica
+##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
+## 1      -1.12        -0.106       -1.31     2 setosa  setosa             1              0               0      
+## 2      -0.997        1.34        -1.31     5 setosa  setosa             1              0               0      
+## 3      -0.519        1.58        -1.31    11 setosa  setosa             0.996          0.00366         0      
+## 4      -1.24         0.860       -1.31    12 setosa  setosa             1              0               0      
+## 5      -0.0406       2.31        -1.31    15 setosa  setosa             0.953          0.046           0.00111
+## 6      -0.160        3.27        -1.05    16 setosa  setosa             0.971          0.028           0.00111</code></pre>
 <p><br></p>
 </div>
 <div id="further-resources" class="section level3">

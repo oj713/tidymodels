@@ -11,7 +11,7 @@
 
 
 
-<title>RSample</title>
+<title>Code</title>
 
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -274,73 +274,54 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">RSample</h1>
+<h1 class="title toc-ignore">Code</h1>
 
 </div>
 
 
-<p><a href="https://rsample.tidymodels.org/" class="uri">https://rsample.tidymodels.org/</a></p>
-<p>When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset resampling and splitting.</p>
+<p>This page contains the complete code for the iris modeling example. For a detailed walkthrough, look at the other pages on this site. Note that this example uses a <code>workflow</code> object to create the final predictions, and thus the recipe and parsnip model and not prepped or fit independently.</p>
 <p><br></p>
-<div id="training-testing-splits" class="section level3">
-<h3>Training / Testing Splits</h3>
-<p>To create a training/testing split using RSample, we can use the <code>initial_split()</code> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
-<pre class="r"><code># data_iris is defined in &#39;Overview&#39;
-data_split &lt;- initial_split(data_iris, 
-                prop = 3/4) # proportion of data to use for training
+<pre class="r"><code>library(tidymodels)
 
-data_split</code></pre>
-<pre><code>## &lt;Analysis/Assess/Total&gt;
-## &lt;112/38/150&gt;</code></pre>
-<p>To retrieve the actual training and testing data, use the <code>testing()</code> and <code>training()</code> functions</p>
-<pre class="r"><code># using training() and testing() to retrieve datasets
-data_test &lt;- testing(data_split)
-data_train &lt;- training(data_split)
+# defining data_iris
+data_iris &lt;- bind_cols(all_of(iris), 
+                       row = 1:nrow(iris))</code></pre>
+<pre class="r"><code># RSample - generate data splits 
+data_split &lt;- initial_split(data_iris, prop = 3/4)
 
-dim(data_test)</code></pre>
-<pre><code>## [1] 38  6</code></pre>
-<p><br></p>
-</div>
-<div id="v-fold-cross-validation" class="section level3">
-<h3>V-Fold Cross Validation</h3>
-<p>Use <code>vfold_cv()</code> to create folds in your data. This function returns a table with a data split object and identification variable for each fold.</p>
-<pre class="r"><code>data_folds &lt;- vfold_cv(data_iris, 
-                       v = 5, # number of partitions in dataset 
-                       repeats = 1, # times to repeat partitioning
-                       strata = Species) # (optional) variable used for stratified sampling
+testing &lt;- testing(data_split)
+training &lt;- training(data_split)</code></pre>
+<pre class="r"><code># Recipes - define and apply preprocessing steps
+iris_recipe &lt;- recipe(Species ~ ., 
+                      data = training) |&gt;
+  update_role(row, new_role = &quot;ID&quot;) |&gt;
+  step_corr(all_numeric_predictors()) |&gt;
+  step_normalize(all_numeric_predictors()) |&gt;
+  step_rename(Row = row) </code></pre>
+<pre class="r"><code># Parsnip - create a model
+rf &lt;- rand_forest() |&gt;
+  set_mode(&quot;classification&quot;) |&gt;
+  set_args(trees = 500) |&gt;
+  set_engine(&quot;ranger&quot;)</code></pre>
+<pre class="r"><code># Workflows - bundle recipe and model together and generate predictions
+iris_wkf &lt;- workflow() |&gt;
+  add_recipe(iris_recipe) |&gt;
+  add_model(rf) |&gt;
+  fit(training)
 
-data_folds</code></pre>
-<pre><code>## #  5-fold cross-validation using stratification 
-## # A tibble: 5 × 2
-##   splits           id   
-##   &lt;list&gt;           &lt;chr&gt;
-## 1 &lt;split [120/30]&gt; Fold1
-## 2 &lt;split [120/30]&gt; Fold2
-## 3 &lt;split [120/30]&gt; Fold3
-## 4 &lt;split [120/30]&gt; Fold4
-## 5 &lt;split [120/30]&gt; Fold5</code></pre>
-<p>We can retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
-<ul>
-<li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code> and can probably be used interchangeably.</li>
-</ul>
-<pre class="r"><code># working with Fold1
-split &lt;- data_folds$splits[[1]]
-
-testing &lt;- testing(split)
-assessment &lt;- assessment(split)
-identical(testing, assessment)</code></pre>
-<pre><code>## [1] TRUE</code></pre>
-<p><br></p>
-</div>
-<div id="further-resources" class="section level3">
-<h3>Further Resources</h3>
-<ul>
-<li><a href="https://rsample.tidymodels.org/articles/Working_with_rsets.html" class="uri">https://rsample.tidymodels.org/articles/Working_with_rsets.html</a>
-<ul>
-<li>A helpful example of working with cross validation folds. Also covers using RSample for the bootstrap method, which isn’t touched on here.</li>
-</ul></li>
-</ul>
-</div>
+iris_preds &lt;- iris_wkf |&gt;
+  augment(testing)</code></pre>
+<pre class="r"><code># Yardstick - evaluate performance 
+iris_preds |&gt;
+  roc_auc(Species, .pred_setosa:.pred_virginica)</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##   .metric .estimator .estimate
+##   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
+## 1 roc_auc hand_till          1</code></pre>
+<pre class="r"><code>iris_preds |&gt;
+  roc_curve(Species, .pred_setosa:.pred_virginica) |&gt;
+  autoplot()</code></pre>
+<p><img src="Code_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 
 
 

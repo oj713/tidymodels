@@ -41,7 +41,7 @@ Once we've initialized a model, we can set its specifications/parameters.
 
 * **`set_mode()`** determines whether the model is a classification or regression model. Not every model has both options -- for example, `linear_reg()` only supports regression while `logistic_reg()` only supports classification. 
 
-* **`set_args()`** sets parameters specific to the initialized model. The names of these arguments are standardized so that similar parameters across models have the same name -- for example, `penalty` is the name of the regularization argument, if a model has one. 
+* **`set_args()`** sets parameters specific to the model type. The names of these arguments are standardized so that similar parameters across models have the same name -- for example, `penalty` is the name of the regularization argument, if a model has one. 
 
 ```{r modeargs}
 # setting mode and parameters for both of our example models 
@@ -104,6 +104,7 @@ rf_fit <- rf |>
 rf_fit
 ```
 
+**Note:** If a model uses a specialized formula that specifies model structure as well as terms (eg. GAMs), you can use it for `fit()`. 
 
 In order to generate predictions from new data, pass the fitted model and a dataset to either the `predict()` or `augment()` functions. `predict()` will return a tibble of predictions, and `augment()` will bind the new prediction columns to the input data. 
 
@@ -118,8 +119,8 @@ predict(rf_fit, prepped_testing, type = "prob") |>
   head()
 
 # augment binds prediction class and prediction probabilities to original data
-predictions <- augment(rf_fit, prepped_testing) |>
-  glimpse()
+augment(rf_fit, prepped_testing) |>
+  head()
 ```
 
 <br>

@@ -5,8 +5,38 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+source("setup.R")
+```
+https://yardstick.tidymodels.org/
+
+The final step of building a model is to evaluate its performance. The `yardstick` package contains various methods to summarize and display model results in a tidy manner. 
+
+We will be evaluating the accuracy of our iris model based on the augmented `iris_preds` data defined in [Workflows Tutorial](Workflows.html). As a note, the predictions have a 100% accuracy rate so the demonstrated metrics are not very illustrative. This will be fixed in a later iteration of this site. 
+
+<br>
+
+### Examples of Functions ###
+
+For a full list of `yardstick` functions, look at the [Official Reference](https://yardstick.tidymodels.org/reference/index.html).
+
+* The **`metrics()`** function will automatically choose metrics appropriate for the given data and present them as a tibble. 
+
+```{r}
+# metrics() takes a table, truth column, and estimate column
+metrics(iris_preds, truth = Species, estimate = .pred_class)
+
+iris_preds
 ```
 
-`metrics()`
+* **`roc_auc()`** and **roc_curve()** allow you to compute and plot the area under the curve
 
-`roc_auc()`
+```{r}
+iris_preds |>
+  # for multiclass predictions, pass in all estimate classes
+  roc_auc(Species, .pred_setosa:.pred_virginica)
+
+iris_preds |>
+  roc_curve(Species, .pred_setosa:.pred_virginica) |>
+  autoplot()
+```

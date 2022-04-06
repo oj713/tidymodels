@@ -15,7 +15,7 @@ We usually need to manipulate datasets before passing them to a model so that th
 
 ### Recipe Initiation ###
 
-Recipe objects are built iteratively: that is, we create an initial "blank" recipe object and then add on data transformations via functions. 
+Recipe objects are built by creating a "blank" recipe object and then adding on data transformations via functions. 
 
 To initiate a recipe object, we can pass a formula and template dataset to the `recipe()` function. For this example, we are going to start with the `data_split` testing/training split we defined in the [RSample Tutorial](RSample.html).
 
@@ -26,6 +26,8 @@ template_data <- training(data_split)
 iris_recipe <- recipe(Species ~ ., 
                       data = template_data)
 ```
+
+**Note:** If you are building a recipe for a model with a specialized formula (eg. GAMs, which include smoothing functions) do not use it here. The formula should only represent outcomes and predictors, not any special operations/transformations (which can be included later in the `parsnip` model).
 
 Alternatively, we can define a recipe object by passing in a template dataset, a list of all variables to be included in a model, and a list of *roles* corresponding to variables (more on this below!). This is preferable for datasets with a high number of variables. 
 

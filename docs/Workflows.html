@@ -259,6 +259,9 @@ $(document).ready(function () {
 <li>
   <a href="Yardstick.html">Yardstick</a>
 </li>
+<li>
+  <a href="Code.html">Code</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -276,8 +279,163 @@ $(document).ready(function () {
 </div>
 
 
-<p>does augment() bind prediction data to prepped or unprepped recipes?</p>
-<p>where should i talk about gams? i should probably figure out gams first.</p>
+<p><a href="https://workflows.tidymodels.org/" class="uri">https://workflows.tidymodels.org/</a></p>
+<p>Typically, when building a model the input data must be processed in some way, and those preprocessing steps are often specific to the model we’d like to make. <code>workflows</code> creates objects that bundles preprocessing and <code>parsnip</code> objects together, such that we can prep the data and fit the model with a single call to <code>fit()</code></p>
+<p><br></p>
+<div id="initiating-a-workflow" class="section level3">
+<h3>Initiating a Workflow</h3>
+<p>We can initiate a workflow object with the <code>workflow()</code> function. You can add a preprocessor and model in the initial function call or by using the functions defined below.</p>
+<pre class="r"><code>wkf &lt;- workflow(preprocessor = NULL, # pass in preprocessor here 
+                spec = NULL) # pass in model here</code></pre>
+<p><br></p>
+</div>
+<div id="adding-a-preprocessor" class="section level3">
+<h3>Adding a Preprocessor</h3>
+<p>There are a few options for what you can use as a preprocessor in a workflow.</p>
+<ul>
+<li><strong>A Formula</strong>: for simple models, you can just pass in a model formula using <code>add_formula()</code>.</li>
+<li><strong>Variable Specifications</strong>: instead of a formula, you can directly specify outcomes and predictors with <code>add_variables()</code>.</li>
+</ul>
+<pre class="r"><code>wkf1 &lt;- wkf |&gt;
+  add_formula(Species ~ .)
+
+# identical to wkf1
+# note that we can use everything() to specify predictors, as outcomes will be automatically ignored 
+wkf2 &lt;- wkf |&gt;
+  add_variables(outcomes = Species, predictors = everything())</code></pre>
+<ul>
+<li><strong>A Recipe</strong>: for more complex pre-processing, pass in a recipe object using <code>add_recipe()</code>. Most of the time, this is a better option. For this example, we will use the <code>iris_recipe</code> defined in the <a href="Recipes.html">Recipes Tutorial</a>.
+<ul>
+<li>You can pass in a prepped or unprepped recipe to the workflow. If the recipe is not prepped, the workflow will prep it for you.</li>
+</ul></li>
+</ul>
+<pre class="r"><code>iris_wkf &lt;- wkf |&gt;
+  add_recipe(iris_recipe)</code></pre>
+<p>Note that each <code>add_x()</code> function has accompanying <code>remove_x()</code> and <code>update_x()</code> functions to allow for workflow modification.</p>
+<p><br></p>
+</div>
+<div id="adding-a-model" class="section level3">
+<h3>Adding a Model</h3>
+<p>All workflows must include a <code>parsnip</code> model object. Add an <strong>unfitted</strong> model object using <code>add_model()</code>. We will use the <code>rf</code> random forest model defined in the <a href="Parsnip.html">Parsnip Tutorial</a>.</p>
+<pre class="r"><code>iris_wkf &lt;- iris_wkf |&gt;
+  add_model(rf)</code></pre>
+<p><strong>Note:</strong> If you are using a model with a specialized formula, add it using the <code>formula</code> argument of <code>add_model()</code>. You must use <code>add_model()</code> for this – special formulas cannot be specified within the <code>workflow()</code> function.</p>
+<pre class="r"><code># GAMs have special syntax for formulas because of their smoothing functions
+gam &lt;- gen_additive_mod() |&gt;
+  set_mode(&quot;regression&quot;) |&gt;
+  set_engine(&quot;mgcv&quot;)
+  
+gam_wkf &lt;- workflow() |&gt;
+  # notice the lack of special syntax for the preprocessor formula
+  add_formula(Sepal.length ~ Species + Sepal.width) |&gt; 
+  add_model(gam, 
+            # now using GAM specific syntax 
+            formula = Sepal.length ~ Species + s(Sepal.width))</code></pre>
+<p><br></p>
+</div>
+<div id="fitting-and-predicting-with-a-workflow" class="section level3">
+<h3>Fitting and Predicting with a Workflow</h3>
+<p>Once we’ve built a workflow, we can use the <code>fit()</code>, <code>predict()</code>, and <code>augment()</code> functions in a similar method to <code>parsnip</code> in order to train the model and generate predictions. The main difference is now we can pass the raw data into these functions, rather than data already processed by a recipe.</p>
+<p>We will fit and predict the workflow using the <code>data_split</code> object defined in the <a href="RSample.html">RSample Tutorial</a></p>
+<pre class="r"><code># fitting the model to the training data
+iris_wkf &lt;- iris_wkf |&gt;
+  # since we already defined the formula in the workflow, fit() only needs the raw data
+  fit(training(data_split)) 
+
+# using augment to generate predictions
+# notice that augment now binds predictions to the raw, unbaked input data!
+iris_preds &lt;- augment(iris_wkf, training(data_split))
+head(iris_preds)</code></pre>
+<pre><code>## # A tibble: 6 × 10
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species      row .pred_class .pred_setosa .pred_versicolor
+##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;      &lt;int&gt; &lt;fct&gt;              &lt;dbl&gt;            &lt;dbl&gt;
+## 1          7.2         3.6          6.1         2.5 virginica    110 virginica          0.002          0.00167
+## 2          4.4         3.2          1.3         0.2 setosa        43 setosa             1              0      
+## 3          5           3.2          1.2         0.2 setosa        36 setosa             1              0      
+## 4          5.8         2.7          4.1         1   versicolor    68 versicolor         0              0.998  
+## 5          6.2         2.9          4.3         1.3 versicolor    98 versicolor         0              0.981  
+## 6          7           3.2          4.7         1.4 versicolor    51 versicolor         0.084          0.913  
+## # … with 1 more variable: .pred_virginica &lt;dbl&gt;</code></pre>
+<p><br></p>
+</div>
+<div id="examining-workflows" class="section level3">
+<h3>Examining Workflows</h3>
+<p>We can view information about a workflow object by calling it.</p>
+<pre class="r"><code>iris_wkf</code></pre>
+<pre><code>## ══ Workflow [trained] ═══════════════════════════════════════════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: rand_forest()
+## 
+## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────────
+## 3 Recipe Steps
+## 
+## • step_corr()
+## • step_normalize()
+## • step_rename()
+## 
+## ── Model ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## Ranger result
+## 
+## Call:
+##  ranger::ranger(x = maybe_data_frame(x), y = y, num.trees = ~500,      num.threads = 1, verbose = FALSE, seed = sample.int(10^5,          1), probability = TRUE) 
+## 
+## Type:                             Probability estimation 
+## Number of trees:                  500 
+## Sample size:                      112 
+## Number of independent variables:  4 
+## Mtry:                             2 
+## Target node size:                 10 
+## Variable importance mode:         none 
+## Splitrule:                        gini 
+## OOB prediction error (Brier s.):  0.005408678</code></pre>
+<p>If we want specific information from a workflow, the <code>workflows</code> package contains several extraction methods to retrieve specific aspects of the workflow, such as the fitted model or preprocessor.</p>
+<pre class="r"><code># extracting the (unprepped) preprocessor
+extract_preprocessor(iris_wkf)</code></pre>
+<pre><code>## Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##         ID          1
+##    outcome          1
+##  predictor          4
+## 
+## Operations:
+## 
+## Correlation filter on all_numeric_predictors()
+## Centering and scaling for all_numeric_predictors()
+## Variable renaming for  Row</code></pre>
+<pre class="r"><code>#extracting the fitted model
+extract_fit_parsnip(iris_wkf)</code></pre>
+<pre><code>## parsnip model object
+## 
+## Fit time:  11ms 
+## Ranger result
+## 
+## Call:
+##  ranger::ranger(x = maybe_data_frame(x), y = y, num.trees = ~500,      num.threads = 1, verbose = FALSE, seed = sample.int(10^5,          1), probability = TRUE) 
+## 
+## Type:                             Probability estimation 
+## Number of trees:                  500 
+## Sample size:                      112 
+## Number of independent variables:  4 
+## Mtry:                             2 
+## Target node size:                 10 
+## Variable importance mode:         none 
+## Splitrule:                        gini 
+## OOB prediction error (Brier s.):  0.005408678</code></pre>
+<p>A complete list of extract functions for workflows can be found <a href="https://workflows.tidymodels.org/reference/extract-workflow.html">here</a>.</p>
+<p><br></p>
+</div>
+<div id="further-resources" class="section level3">
+<h3>Further Resources</h3>
+<ul>
+<li><a href="https://www.tmwr.org/workflows.html" class="uri">https://www.tmwr.org/workflows.html</a>
+<ul>
+<li>Both an introduction of and deep dive into workflows that covers more capabilities than what I have here, including workflow sets.</li>
+</ul></li>
+</ul>
+</div>
 
 
 

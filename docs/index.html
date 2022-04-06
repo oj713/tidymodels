@@ -259,6 +259,9 @@ $(document).ready(function () {
 <li>
   <a href="Yardstick.html">Yardstick</a>
 </li>
+<li>
+  <a href="Code.html">Code</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -282,12 +285,13 @@ $(document).ready(function () {
 <pre class="r"><code>library(tidymodels)</code></pre>
 <p>Each tab on this site corresponds to a different package from Tidymodels:</p>
 <ul>
-<li><code>RSample</code> - Re-sample and split training/testing data</li>
-<li><code>Recipes</code> - Create “pre-processing objects” that apply transformations to data</li>
-<li><code>Parsnip</code> - Common, simple interface for model initiation</li>
-<li><code>Workflows</code> - Bundle recipes and models into a single object</li>
-<li><code>Yardstick</code> - Evaluate model performance</li>
+<li><a href="RSample.html"><code>RSample</code></a> - Re-sample and split training/testing data</li>
+<li><a href="Recipes.html"><code>Recipes</code></a> - Create “pre-processing objects” that apply transformations to data</li>
+<li><a href="Parsnip.html"><code>Parsnip</code></a> - Common, simple interface for model initiation</li>
+<li><a href="Workflows.html"><code>Workflows</code></a> - Bundle recipes and models into a single object</li>
+<li><a href="Yardstick.html"><code>Yardstick</code></a> - Evaluate model performance</li>
 </ul>
+<p>The <a href="Code.html">Code</a> page contains the complete code that makes up the modeling example walked through on each tab.</p>
 <p><strong>Note:</strong> <a href="https://tune.tidymodels.org/"><code>tune</code></a>, <a href="https://broom.tidymodels.org/"><code>broom</code></a>, and <a href="https://dials.tidymodels.org/"><code>dials</code></a> are additional Tidymodels packages designed to further define and organize models/recipes. They are not covered here.</p>
 <p><br></p>
 <div id="dataset" class="section level3">
@@ -318,6 +322,10 @@ head(data_iris)</code></pre>
 <li><a href="https://www.tmwr.org/" class="uri">https://www.tmwr.org/</a>
 <ul>
 <li>A detailed guidebook of Tidymodels and general modeling concepts</li>
+</ul></li>
+<li><a href="https://www.tidymodels.org/start/tuning/" class="uri">https://www.tidymodels.org/start/tuning/</a>
+<ul>
+<li>although the <code>tune</code> package isn’t covered here (yet), it contains helpful functions to help optimize hyperparameters for models. This is a helpful introductory tutorial for <code>tune</code> that explores some of its capability.</li>
 </ul></li>
 </ul>
 <p><br></p>
