@@ -34,7 +34,7 @@ To retrieve the actual training and testing data, use the `testing()` and `train
 data_test <- testing(data_split)
 data_train <- training(data_split)
 
-dim(data_test)
+head(data_test)
 ```
 
 <br>

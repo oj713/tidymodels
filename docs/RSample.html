@@ -300,8 +300,14 @@ data_split</code></pre>
 data_test &lt;- testing(data_split)
 data_train &lt;- training(data_split)
 
-dim(data_test)</code></pre>
-<pre><code>## [1] 38  6</code></pre>
+head(data_test)</code></pre>
+<pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
+## 2           4.9         3.0          1.4         0.2  setosa   2
+## 4           4.6         3.1          1.5         0.2  setosa   4
+## 9           4.4         2.9          1.4         0.2  setosa   9
+## 18          5.1         3.5          1.4         0.3  setosa  18
+## 22          5.1         3.7          1.5         0.4  setosa  22
+## 28          5.2         3.5          1.5         0.2  setosa  28</code></pre>
 <p><br></p>
 </div>
 <div id="v-fold-cross-validation" class="section level3">
