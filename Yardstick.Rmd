@@ -20,13 +20,11 @@ We will be evaluating the accuracy of our iris model based on the augmented `iri
 
 For a full list of `yardstick` functions, look at the [Official Reference](https://yardstick.tidymodels.org/reference/index.html).
 
-* The **`metrics()`** function will automatically choose metrics appropriate for the given data and present them as a tibble. 
+* The **`metrics()`** function will automatically choose metrics appropriate for the given data and present them as a tibble. It works for both regression and classification models. 
 
 ```{r}
 # metrics() takes a table, truth column, and estimate column
 metrics(iris_preds, truth = Species, estimate = .pred_class)
-
-iris_preds
 ```
 
 * **`roc_auc()`** and **roc_curve()** allow you to compute and plot the area under the curve
