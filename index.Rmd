@@ -29,7 +29,11 @@ Each tab on this site corresponds to a different package from Tidymodels:
 
 The [Code](Code.html) page contains the complete code that makes up the modeling example walked through on each tab. 
 
-**Note:** [`tune`](https://tune.tidymodels.org/), [`broom`](https://broom.tidymodels.org/), and [`dials`](https://dials.tidymodels.org/) are additional Tidymodels packages designed to further define and organize models/recipes. They are not covered here.  
+Additionally, there are other core Tidymodels packages not covered here:
+
+* [`Tune`](https://tune.tidymodels.org/) - tune hyperparameters for models
+* [`Dials`](https://dials.tidymodels.org/) - infrastructure for model tuning 
+* [`Broom`](https://broom.tidymodels.org/) - summarize key model facts 
 
 <br>
 
