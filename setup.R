@@ -43,6 +43,3 @@ iris_preds <- workflow() |>
   fit(training(data_split)) |>
   augment(testing(data_split))
 
-
-
-
