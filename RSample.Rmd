@@ -15,7 +15,9 @@ When building a model, the source dataset usually needs to be split up somehow. 
 
 ### Training / Testing Splits ###
 
-To create a training/testing split using RSample, we can use the `initial_split()` function. This function generates an `rsplit` object that contains partitioning information for the data.  
+To create a randomly divided training/testing split using RSample, we can use the `initial_split()` function. This function generates an `rsplit` object that contains partitioning information for the data. 
+
+  * To create a time-based testing/training split, use the `initial_time_split()` function. This function works identically to `initial_split()` except that it will use the *first* `prop` samples for training instead of a random selection. 
 
 ```{r}
 # data_iris is defined in 'Overview'

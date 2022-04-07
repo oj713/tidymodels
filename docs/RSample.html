@@ -284,7 +284,10 @@ $(document).ready(function () {
 <p><br></p>
 <div id="training-testing-splits" class="section level3">
 <h3>Training / Testing Splits</h3>
-<p>To create a training/testing split using RSample, we can use the <code>initial_split()</code> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
+<p>To create a randomly divided training/testing split using RSample, we can use the <code>initial_split()</code> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
+<ul>
+<li>To create a time-based testing/training split, use the <code>initial_time_split()</code> function. This function works identically to <code>initial_split()</code> except that it will use the <em>first</em> <code>prop</code> samples for training instead of a random selection.</li>
+</ul>
 <pre class="r"><code># data_iris is defined in &#39;Overview&#39;
 data_split &lt;- initial_split(data_iris, 
                 prop = 3/4) # proportion of data to use for training

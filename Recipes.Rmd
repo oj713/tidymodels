@@ -55,7 +55,9 @@ recipe(~ Sepal.Length, data = template_data) |> summary()
 recipe(Species + Sepal.Length ~ ., data = template_data) |> summary()
 ```
 
-Once we've initiated a recipe, we can change the role for a variable using the `update_role()` function. In the case of `data_iris`, we would want to make `row` an ID variable so that it plays no part in the model but stays attached to the original data for later identification/analysis. 
+Once we've initiated a recipe, we can change the role for a variable using the `update_role()` function. In the case of `data_iris`, we would want to make `row` an ID variable so that it won't be transformed as a predictor but will stay attached to the data for later processing. 
+
+* Note that `update_role()` is overriding the original formula / variable specifications passed to the recipe. 
 
 ```{r}
 # updating 'row' to an ID variable

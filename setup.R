@@ -33,9 +33,7 @@ rf <- rand_forest() |>
   set_engine("ranger")
 
 rf_fit <- rf |>
-  fit(Species ~ ., data = prepped_training)
-
-# Workflows 
+  fit(Species ~ Sepal.Length + Sepal.Width + Petal.Width, data = prepped_training)
 
 iris_preds <- workflow() |>
   add_recipe(iris_recipe) |>
