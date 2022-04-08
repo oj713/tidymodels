@@ -336,7 +336,10 @@ gam_wkf &lt;- workflow() |&gt;
 <div id="fitting-and-predicting-with-a-workflow" class="section level3">
 <h3>Fitting and Predicting with a Workflow</h3>
 <p>Once we’ve built a workflow, we can use the <code>fit()</code>, <code>predict()</code>, and <code>augment()</code> functions in a similar method to <code>parsnip</code> in order to train the model and generate predictions. The main difference is now we can pass the raw data into these functions, rather than data already processed by a recipe.</p>
-<p>We will fit and predict the workflow using the <code>data_split</code> object defined in the <a href="RSample.html">RSample Tutorial</a></p>
+<ul>
+<li>Note that <code>augment()</code> will now bind predictions to the unbaked input data. This is often advantageous, but if your recipe contains steps that remove rows (eg. <code>step_naomit()</code>), <code>augment()</code> will error because the input and output datasets will not have the same length.</li>
+</ul>
+<p>We will fit and predict the workflow using the <code>data_split</code> object defined in the <a href="RSample.html">RSample Tutorial</a>.</p>
 <pre class="r"><code># fitting the model to the training data
 iris_wkf &lt;- iris_wkf |&gt;
   # since we already defined the formula in the workflow, fit() only needs the raw data
@@ -347,33 +350,34 @@ iris_wkf &lt;- iris_wkf |&gt;
 iris_preds &lt;- augment(iris_wkf, training(data_split))
 head(iris_preds)</code></pre>
 <pre><code>## # A tibble: 6 × 10
-##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species      row .pred_class .pred_setosa
-##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;      &lt;int&gt; &lt;fct&gt;              &lt;dbl&gt;
-## 1          7.2         3.2          6           1.8 virginica    126 virginica          0    
-## 2          5.4         3.4          1.7         0.2 setosa        21 setosa             0.998
-## 3          6.3         2.5          4.9         1.5 versicolor    73 versicolor         0    
-## 4          6.4         2.8          5.6         2.1 virginica    129 virginica          0    
-## 5          6.3         3.3          6           2.5 virginica    101 virginica          0    
-## 6          6.7         3.1          4.7         1.5 versicolor    87 versicolor         0    
-## # … with 2 more variables: .pred_versicolor &lt;dbl&gt;, .pred_virginica &lt;dbl&gt;</code></pre>
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species      row .pred_class
+##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;      &lt;int&gt; &lt;fct&gt;      
+## 1          4.8         3.1          1.6         0.2 setosa        31 setosa     
+## 2          4.8         3.4          1.6         0.2 setosa        12 setosa     
+## 3          5.5         2.4          3.7         1   versicolor    82 versicolor 
+## 4          7.7         3.8          6.7         2.2 virginica    118 virginica  
+## 5          7.7         3            6.1         2.3 virginica    136 virginica  
+## 6          6.6         3            4.4         1.4 versicolor    76 versicolor 
+## # … with 3 more variables: .pred_setosa &lt;dbl&gt;, .pred_versicolor &lt;dbl&gt;,
+## #   .pred_virginica &lt;dbl&gt;</code></pre>
 <p><br></p>
 </div>
 <div id="examining-workflows" class="section level3">
 <h3>Examining Workflows</h3>
 <p>We can view information about a workflow object by calling it.</p>
 <pre class="r"><code>iris_wkf</code></pre>
-<pre><code>## ══ Workflow [trained] ═══════════════════════════════════════════════════════════════════════════════════
+<pre><code>## ══ Workflow [trained] ══════════════════════════════════════════════════════════
 ## Preprocessor: Recipe
 ## Model: rand_forest()
 ## 
-## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────
+## ── Preprocessor ────────────────────────────────────────────────────────────────
 ## 3 Recipe Steps
 ## 
 ## • step_corr()
 ## • step_normalize()
 ## • step_rename()
 ## 
-## ── Model ────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Model ───────────────────────────────────────────────────────────────────────
 ## Ranger result
 ## 
 ## Call:
@@ -387,7 +391,7 @@ head(iris_preds)</code></pre>
 ## Target node size:                 10 
 ## Variable importance mode:         none 
 ## Splitrule:                        gini 
-## OOB prediction error (Brier s.):  0.008643977</code></pre>
+## OOB prediction error (Brier s.):  0.002884204</code></pre>
 <p>If we want specific information from a workflow, the <code>workflows</code> package contains several extraction methods to retrieve specific aspects of the workflow, such as the fitted model or preprocessor.</p>
 <pre class="r"><code># extracting the (unprepped) preprocessor
 extract_preprocessor(iris_wkf)</code></pre>
@@ -409,7 +413,7 @@ extract_preprocessor(iris_wkf)</code></pre>
 extract_fit_parsnip(iris_wkf)</code></pre>
 <pre><code>## parsnip model object
 ## 
-## Fit time:  14ms 
+## Fit time:  13ms 
 ## Ranger result
 ## 
 ## Call:
@@ -423,7 +427,7 @@ extract_fit_parsnip(iris_wkf)</code></pre>
 ## Target node size:                 10 
 ## Variable importance mode:         none 
 ## Splitrule:                        gini 
-## OOB prediction error (Brier s.):  0.008643977</code></pre>
+## OOB prediction error (Brier s.):  0.002884204</code></pre>
 <p>A complete list of extract functions for workflows can be found <a href="https://workflows.tidymodels.org/reference/extract-workflow.html">here</a>.</p>
 <p><br></p>
 </div>

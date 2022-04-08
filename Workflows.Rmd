@@ -87,7 +87,9 @@ gam_wkf <- workflow() |>
 
 Once we've built a workflow, we can use the `fit()`, `predict()`, and `augment()` functions in a similar method to `parsnip` in order to train the model and generate predictions. The main difference is now we can pass the raw data into these functions, rather than data already processed by a recipe. 
 
-We will fit and predict the workflow using the `data_split` object defined in the [RSample Tutorial](RSample.html)
+* Note that `augment()` will now bind predictions to the unbaked input data. This is often advantageous, but if your recipe contains steps that remove rows (eg. `step_naomit()`), `augment()` will error because the input and output datasets will not have the same length. 
+
+We will fit and predict the workflow using the `data_split` object defined in the [RSample Tutorial](RSample.html).
 
 ```{r}
 # fitting the model to the training data
