@@ -13,7 +13,7 @@
 
 <title>Recipes</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -60,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -80,6 +81,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -232,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -278,6 +282,15 @@ $(document).ready(function () {
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#recipe-initiation">Recipe Initiation</a></li>
+<li><a href="#roles">Roles</a></li>
+<li><a href="#step-functions">Step Functions</a></li>
+<li><a href="#prepping-the-recipe-and-baking-new-data">Prepping the Recipe and Baking New Data</a></li>
+<li><a href="#further-resources">Further Resources</a></li>
+</ul>
+</div>
 
 <p><a href="https://recipes.tidymodels.org/" class="uri">https://recipes.tidymodels.org/</a></p>
 <p>We usually need to manipulate datasets before passing them to a model so that the model can work as effectively as possible. The <code>recipes</code> package provides a way to represent pre-processing steps as an object, so that the transformations we do to one dataset can easily be applied to another.</p>
@@ -416,7 +429,7 @@ iris_recipe</code></pre>
 ## 
 ## Correlation filter on all_numeric_predictors()
 ## Centering and scaling for all_numeric_predictors()
-## Variable renaming for  Row</code></pre>
+## Variable renaming for Row</code></pre>
 <p>Step functions can also cover much more complex operations. For a full list of step functions, see the official <a href="https://recipes.tidymodels.org/reference/index.html">Function Reference</a>.</p>
 <p><strong>Note:</strong> Since step functions are applied successively to a recipe object, order matters. The <a href="https://recipes.tidymodels.org/articles/Ordering.html">Recipes Website</a> has some tips and tricks for how to handle ordering step functions.</p>
 <p><br></p>
@@ -443,47 +456,48 @@ iris_recipe_prepped</code></pre>
 ## 
 ## Operations:
 ## 
-## Correlation filter removed Petal.Length [trained]
+## Correlation filter on Petal.Length [trained]
 ## Centering and scaling for Sepal.Length, Sepal.Width, Petal.Width [trained]
-## Variable renaming for  Row [trained]</code></pre>
+## Variable renaming for Row [trained]</code></pre>
 <p>Finally, we can use the prepped recipe to process data. Use <code>juice()</code> to extract the processed template data from a recipe, and use <code>bake()</code> to process new data.</p>
 <p><strong>Note</strong>: <code>prep()</code> <strong>must</strong> be called before using a recipe to bake data - otherwise, the steps are not trained and the code will error.</p>
 <pre class="r"><code># attempting to process data before calling prep(), causing an error
 bake(iris_recipe, testing(data_split))</code></pre>
-<pre><code>## Error: At least one step has not been trained. Please run `prep`.</code></pre>
+<pre><code>## Error in `bake()`:
+## ! At least one step has not been trained. Please run `prep`.</code></pre>
 <pre class="r"><code># extracting the training data using `juice()` 
 prepped_training &lt;- juice(iris_recipe_prepped)
 head(prepped_training)</code></pre>
 <pre><code>## # A tibble: 6 × 5
-##   Sepal.Length Sepal.Width Petal.Width   Row Species   
-##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;     
-## 1       -1.23        0.715      -1.25     25 setosa    
-## 2       -0.986       0.494      -1.25     50 setosa    
-## 3        0.461      -0.613       0.791   127 virginica 
-## 4        0.340      -0.613       0.154    72 versicolor
-## 5        0.581      -0.834       0.791   124 virginica 
-## 6       -0.263      -1.28       -0.101    70 versicolor</code></pre>
+##   Sepal.Length Sepal.Width Petal.Width   Row Species  
+##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;    
+## 1       -0.267     -0.560         1.05   122 virginica
+## 2        0.548      0.829         1.58   137 virginica
+## 3       -1.08      -0.0971       -1.33     2 setosa   
+## 4        2.41       1.75          1.05   132 virginica
+## 5       -1.67      -0.329        -1.33     9 setosa   
+## 6        2.18      -0.0971        1.45   136 virginica</code></pre>
 <pre class="r"><code># taking a glimpse at an unprocessed data set
 head(testing(data_split))</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
 ## 1           5.1         3.5          1.4         0.2  setosa   1
-## 6           5.4         3.9          1.7         0.4  setosa   6
-## 7           4.6         3.4          1.4         0.3  setosa   7
-## 9           4.4         2.9          1.4         0.2  setosa   9
-## 20          5.1         3.8          1.5         0.3  setosa  20
-## 31          4.8         3.1          1.6         0.2  setosa  31</code></pre>
+## 10          4.9         3.1          1.5         0.1  setosa  10
+## 13          4.8         3.0          1.4         0.1  setosa  13
+## 15          5.8         4.0          1.2         0.2  setosa  15
+## 16          5.7         4.4          1.5         0.4  setosa  16
+## 18          5.1         3.5          1.4         0.3  setosa  18</code></pre>
 <pre class="r"><code># processing the dataset using bake()
 prepped_testing &lt;- bake(iris_recipe_prepped, testing(data_split))
 head(prepped_testing)</code></pre>
 <pre><code>## # A tibble: 6 × 5
 ##   Sepal.Length Sepal.Width Petal.Width   Row Species
 ##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;  
-## 1       -0.865      0.937       -1.25      1 setosa 
-## 2       -0.504      1.82        -0.994     6 setosa 
-## 3       -1.47       0.715       -1.12      7 setosa 
-## 4       -1.71      -0.391       -1.25      9 setosa 
-## 5       -0.865      1.60        -1.12     20 setosa 
-## 6       -1.23       0.0514      -1.25     31 setosa</code></pre>
+## 1      -0.850       1.06         -1.33     1 setosa 
+## 2      -1.08        0.134        -1.47    10 setosa 
+## 3      -1.20       -0.0971       -1.47    13 setosa 
+## 4      -0.0343      2.22         -1.33    15 setosa 
+## 5      -0.151       3.14         -1.07    16 setosa 
+## 6      -0.850       1.06         -1.20    18 setosa</code></pre>
 <p><br></p>
 </div>
 <div id="further-resources" class="section level3">

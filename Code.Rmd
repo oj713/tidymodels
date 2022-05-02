@@ -58,8 +58,9 @@ iris_preds <- iris_wkf |>
 
 ```{r}
 # Yardstick - evaluate performance 
+my_metrics <- metric_set(sens, spec, accuracy)
 iris_preds |>
-  roc_auc(Species, .pred_setosa:.pred_virginica)
+  my_metrics(truth = Species, estimate = .pred_class)
 
 iris_preds |>
   roc_curve(Species, .pred_setosa:.pred_virginica) |>

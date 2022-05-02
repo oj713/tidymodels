@@ -13,7 +13,7 @@
 
 <title>RSample</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -60,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -80,6 +81,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -232,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -278,12 +282,26 @@ $(document).ready(function () {
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#training-testing-splits">Training / Testing Splits</a></li>
+<li><a href="#resampling">Resampling</a>
+<ul>
+<li><a href="#validation-set">Validation Set</a></li>
+<li><a href="#v-fold-cross-validation">V-Fold Cross Validation</a></li>
+<li><a href="#monte-carlo-cross-validation">Monte-Carlo Cross Validation</a></li>
+<li><a href="#bootstrapping">Bootstrapping</a></li>
+<li><a href="#rolling-forecasting-origin-resampling">Rolling Forecasting Origin Resampling</a></li>
+</ul></li>
+<li><a href="#further-resources">Further Resources</a></li>
+</ul>
+</div>
 
 <p><a href="https://rsample.tidymodels.org/" class="uri">https://rsample.tidymodels.org/</a></p>
-<p>When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset resampling and splitting.</p>
+<p>When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset splitting and resampling.</p>
 <p><br></p>
-<div id="training-testing-splits" class="section level3">
-<h3>Training / Testing Splits</h3>
+<div id="training-testing-splits" class="section level1">
+<h1>Training / Testing Splits</h1>
 <p>To create a randomly divided training/testing split using RSample, we can use the <code>initial_split()</code> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
 <ul>
 <li>To create a time-based testing/training split, use the <code>initial_time_split()</code> function. This function works identically to <code>initial_split()</code> except that it will use the <em>first</em> <code>prop</code> samples for training instead of a random selection.</li>
@@ -302,18 +320,24 @@ data_train &lt;- training(data_split)
 
 head(data_test)</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 4           4.6         3.1          1.5         0.2  setosa   4
-## 6           5.4         3.9          1.7         0.4  setosa   6
-## 13          4.8         3.0          1.4         0.1  setosa  13
-## 15          5.8         4.0          1.2         0.2  setosa  15
-## 17          5.4         3.9          1.3         0.4  setosa  17
-## 21          5.4         3.4          1.7         0.2  setosa  21</code></pre>
+## 8           5.0         3.4          1.5         0.2  setosa   8
+## 22          5.1         3.7          1.5         0.4  setosa  22
+## 24          5.1         3.3          1.7         0.5  setosa  24
+## 27          5.0         3.4          1.6         0.4  setosa  27
+## 36          5.0         3.2          1.2         0.2  setosa  36
+## 38          4.9         3.6          1.4         0.1  setosa  38</code></pre>
 <p><br></p>
+</div>
+<div id="resampling" class="section level1">
+<h1>Resampling</h1>
+<p>When building a model, we usually want to estimate the performance of the model <strong>before</strong> we evaluate it with the testing set.</p>
+<div id="validation-set" class="section level3">
+<h3>Validation Set</h3>
 </div>
 <div id="v-fold-cross-validation" class="section level3">
 <h3>V-Fold Cross Validation</h3>
 <p>Use <code>vfold_cv()</code> to create folds in your data. This function returns a table with a data split object and identification variable for each fold.</p>
-<pre class="r"><code>data_folds &lt;- vfold_cv(data_iris, 
+<pre class="r"><code>data_folds &lt;- vfold_cv(data_train, 
                        v = 5, # number of partitions in dataset 
                        repeats = 1, # times to repeat partitioning
                        strata = Species) # (optional) variable used for stratified sampling
@@ -321,13 +345,13 @@ head(data_test)</code></pre>
 data_folds</code></pre>
 <pre><code>## #  5-fold cross-validation using stratification 
 ## # A tibble: 5 × 2
-##   splits           id   
-##   &lt;list&gt;           &lt;chr&gt;
-## 1 &lt;split [120/30]&gt; Fold1
-## 2 &lt;split [120/30]&gt; Fold2
-## 3 &lt;split [120/30]&gt; Fold3
-## 4 &lt;split [120/30]&gt; Fold4
-## 5 &lt;split [120/30]&gt; Fold5</code></pre>
+##   splits          id   
+##   &lt;list&gt;          &lt;chr&gt;
+## 1 &lt;split [88/24]&gt; Fold1
+## 2 &lt;split [89/23]&gt; Fold2
+## 3 &lt;split [89/23]&gt; Fold3
+## 4 &lt;split [91/21]&gt; Fold4
+## 5 &lt;split [91/21]&gt; Fold5</code></pre>
 <p>We can retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
 <ul>
 <li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code> and can probably be used interchangeably.</li>
@@ -339,14 +363,28 @@ testing &lt;- testing(split)
 assessment &lt;- assessment(split)
 identical(testing, assessment)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
+</div>
+<div id="monte-carlo-cross-validation" class="section level3">
+<h3>Monte-Carlo Cross Validation</h3>
+</div>
+<div id="bootstrapping" class="section level3">
+<h3>Bootstrapping</h3>
+</div>
+<div id="rolling-forecasting-origin-resampling" class="section level3">
+<h3>Rolling Forecasting Origin Resampling</h3>
 <p><br></p>
 </div>
-<div id="further-resources" class="section level3">
-<h3>Further Resources</h3>
+</div>
+<div id="further-resources" class="section level1">
+<h1>Further Resources</h1>
 <ul>
 <li><a href="https://rsample.tidymodels.org/articles/Working_with_rsets.html" class="uri">https://rsample.tidymodels.org/articles/Working_with_rsets.html</a>
 <ul>
 <li>A helpful example of working with cross validation folds. Also covers using RSample for the bootstrap method, which isn’t touched on here.</li>
+</ul></li>
+<li><a href="https://www.tmwr.org/resampling.html" class="uri">https://www.tmwr.org/resampling.html</a>
+<ul>
+<li>goes more in depth about all of the methods mentioned here, and touches on parallel processing/saving objects.</li>
 </ul></li>
 </ul>
 </div>

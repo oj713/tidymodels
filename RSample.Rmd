@@ -9,11 +9,11 @@ source("setup.R")
 
 https://rsample.tidymodels.org/
 
-When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset resampling and splitting. 
+When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset splitting and resampling. 
 
 <br>
 
-### Training / Testing Splits ###
+# Training / Testing Splits #
 
 To create a randomly divided training/testing split using RSample, we can use the `initial_split()` function. This function generates an `rsplit` object that contains partitioning information for the data. 
 
@@ -39,12 +39,18 @@ head(data_test)
 
 <br>
 
+# Resampling #
+
+When building a model, we usually want to estimate the performance of the model **before** we evaluate it with the testing set. 
+
+### Validation Set ###
+
 ### V-Fold Cross Validation ### 
 
 Use `vfold_cv()` to create folds in your data. This function returns a table with a data split object and identification variable for each fold. 
 
 ```{r}
-data_folds <- vfold_cv(data_iris, 
+data_folds <- vfold_cv(data_train, 
                        v = 5, # number of partitions in dataset 
                        repeats = 1, # times to repeat partitioning
                        strata = Species) # (optional) variable used for stratified sampling
@@ -65,9 +71,17 @@ assessment <- assessment(split)
 identical(testing, assessment)
 ```
 
+### Monte-Carlo Cross Validation ###
+
+### Bootstrapping ###
+
+### Rolling Forecasting Origin Resampling ###
+
 <br>
 
-### Further Resources ###
+# Further Resources #
 
 * https://rsample.tidymodels.org/articles/Working_with_rsets.html
   *  A helpful example of working with cross validation folds. Also covers using RSample for the bootstrap method, which isn't touched on here. 
+* https://www.tmwr.org/resampling.html
+  * goes more in depth about all of the methods mentioned here, and touches on parallel processing/saving objects. 
