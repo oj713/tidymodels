@@ -11,7 +11,7 @@
 
 
 
-<title>Overview</title>
+<title>Iris</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -283,77 +283,57 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Overview</h1>
+<h1 class="title toc-ignore">Iris</h1>
 
 </div>
 
-<div id="TOC">
-<ul>
-<li><a href="#dataset">Dataset</a></li>
-<li><a href="#general-resources">General Resources</a></li>
-<li><a href="#about">About</a></li>
-</ul>
-</div>
 
-<p><a href="https://www.tidymodels.org/">Tidymodels</a> is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the <a href="https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64">pipe operator</a>.</p>
-<p>To use Tidymodels, simply install and load the <code>tidymodels</code> package. The <code>tidymodels</code> package loads all of its core modeling packages as well as some helpful <code>tidyverse</code> packages such as <code>dplyr</code> and <code>ggplot2</code>. For a complete list of packages loaded by Tidymodels, reference their <a href="https://www.tidymodels.org/packages/">packages page</a>.</p>
-<pre class="r"><code>library(tidymodels)</code></pre>
-<p>Each tab on this site corresponds to a different package from Tidymodels:</p>
-<ul>
-<li><a href="RSample.html"><code>RSample</code></a> - Re-sample and split training/testing data</li>
-<li><a href="Recipes.html"><code>Recipes</code></a> - Create “pre-processing objects” that apply transformations to data</li>
-<li><a href="Parsnip.html"><code>Parsnip</code></a> - Common, simple interface for model initiation</li>
-<li><a href="Yardstick.html"><code>Yardstick</code></a> - Evaluate model performance</li>
-<li><a href="Workflows.html"><code>Workflows</code></a> - Bundle recipes and models into a single object</li>
-<li><a href="WorkflowSets.html"><code>Workflowsets</code></a> - Create and compare sets of workflows</li>
-<li><a href="Tune.html"><code>Tune</code></a> - Tune hyperparameters for models</li>
-</ul>
-<p>Additionally, this page walks through some examples of modeling with tidymodels:</p>
-<ul>
-<li><a href="Iris.html">Iris</a> - Predicting Iris species from measurements.</li>
-</ul>
+<p>This page contains the complete code for the iris modeling example. For a detailed walkthrough, look at the other pages on this site. Note that this example uses a <code>workflow</code> object to create the final predictions, and thus the recipe and parsnip model are not prepped or fit independently.</p>
 <p><br></p>
-<div id="dataset" class="section level3">
-<h3>Dataset</h3>
-<p>This site introduces the Tidymodels packages by walking through the complete modelling process with an example dataset, defined below.</p>
-<p><code>data_iris</code> is a modified version of the inbuilt <code>iris</code> dataset that includes row number as a variable.</p>
-<pre class="r"><code>data_iris &lt;- bind_cols(all_of(iris), 
-                       row = 1:nrow(iris))
+<pre class="r"><code>library(tidymodels)
 
-head(data_iris)</code></pre>
-<pre><code>##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 1          5.1         3.5          1.4         0.2  setosa   1
-## 2          4.9         3.0          1.4         0.2  setosa   2
-## 3          4.7         3.2          1.3         0.2  setosa   3
-## 4          4.6         3.1          1.5         0.2  setosa   4
-## 5          5.0         3.6          1.4         0.2  setosa   5
-## 6          5.4         3.9          1.7         0.4  setosa   6</code></pre>
-<p>Using this example dataset, we will predict <code>Species</code> based on the other variables (row is an identification variable and not used as a predictor). This modelling exercise spans across multiple pages on this site – the complete code is aggregated at the <a href="Iris.html">Iris modelling example</a>.</p>
-<p><br></p>
-</div>
-<div id="general-resources" class="section level3">
-<h3>General Resources</h3>
-<ul>
-<li><a href="https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/" class="uri">https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/</a>
-<ul>
-<li>A simple walkthrough of some core Tidymodels packages and concepts.</li>
-</ul></li>
-<li><a href="https://www.tmwr.org/" class="uri">https://www.tmwr.org/</a>
-<ul>
-<li>A detailed guidebook of Tidymodels and general modeling concepts</li>
-</ul></li>
-<li><a href="https://www.tidymodels.org/start/tuning/" class="uri">https://www.tidymodels.org/start/tuning/</a>
-<ul>
-<li>although the <code>tune</code> package isn’t covered here (yet), it contains helpful functions to help optimize hyperparameters for models. This is a helpful introductory tutorial for <code>tune</code> that explores some of its capability.</li>
-</ul></li>
-</ul>
-<p><br></p>
-</div>
-<div id="about" class="section level3">
-<h3>About</h3>
-<p>This site is authored by Omi Johnson and is meant to serve as an introductory walkthrough of Tidymodels. This site was built using RMarkdown and GitHub hosting – find a simple walkthrough of how to build your own RMarkdown site <a href="https://psyteachr.github.io/hack-your-data/rmarkdown_2.html">here</a>. The source repository for this site is on <a href="https://github.com/oj713/tidymodels">my GitHub</a>.</p>
-<p><strong>NOTE</strong>: This is not a comprehensive guide. These notes are incomplete and only mention methods/techniques that the author is familiar with. Descriptions of packages and methods most likely do not include all possible arguments or applications. For a complete list of each package’s methods and capabilities, please look at the official documentation.</p>
-</div>
+# defining data_iris
+data_iris &lt;- bind_cols(all_of(iris), 
+                       row = 1:nrow(iris))</code></pre>
+<pre class="r"><code># RSample - generate data splits 
+data_split &lt;- initial_split(data_iris, prop = 3/4)
+
+testing &lt;- testing(data_split)
+training &lt;- training(data_split)</code></pre>
+<pre class="r"><code># Recipes - define and apply preprocessing steps
+iris_recipe &lt;- recipe(Species ~ ., 
+                      data = training) |&gt;
+  update_role(row, new_role = &quot;ID&quot;) |&gt;
+  step_corr(all_numeric_predictors()) |&gt;
+  step_normalize(all_numeric_predictors()) |&gt;
+  step_rename(Row = row) </code></pre>
+<pre class="r"><code># Parsnip - create a model
+rf &lt;- rand_forest() |&gt;
+  set_mode(&quot;classification&quot;) |&gt;
+  set_args(trees = 500) |&gt;
+  set_engine(&quot;ranger&quot;)</code></pre>
+<pre class="r"><code># Workflows - bundle recipe and model together and generate predictions
+iris_wkf &lt;- workflow() |&gt;
+  add_recipe(iris_recipe) |&gt;
+  add_model(rf) |&gt;
+  fit(training)
+
+iris_preds &lt;- iris_wkf |&gt;
+  augment(testing)</code></pre>
+<pre class="r"><code># Yardstick - evaluate performance 
+my_metrics &lt;- metric_set(sens, spec, accuracy)
+iris_preds |&gt;
+  my_metrics(truth = Species, estimate = .pred_class)</code></pre>
+<pre><code>## # A tibble: 3 × 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 sens     macro              1
+## 2 spec     macro              1
+## 3 accuracy multiclass         1</code></pre>
+<pre class="r"><code>iris_preds |&gt;
+  roc_curve(Species, .pred_setosa:.pred_virginica) |&gt;
+  autoplot()</code></pre>
+<p><img src="Iris_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 
 
 

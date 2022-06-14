@@ -9,11 +9,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidymodels)
 ```
 
-https://www.tidymodels.org/ 
+[Tidymodels](https://www.tidymodels.org/) is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the [pipe operator](https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64).
 
-Tidymodels is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the [pipe operator](https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64).
-
-To use Tidymodels, simply install and load the `tidymodels` package. The `tidymodels` package loads all of its core modeling packages as well as some helpful `tidyverse` packages such as `dplyr` and `ggplot2`. 
+To use Tidymodels, simply install and load the `tidymodels` package. The `tidymodels` package loads all of its core modeling packages as well as some helpful `tidyverse` packages such as `dplyr` and `ggplot2`. For a complete list of packages loaded by Tidymodels, reference their [packages page](https://www.tidymodels.org/packages/).
 
 ```{r, eval=FALSE}
 library(tidymodels)
@@ -24,22 +22,20 @@ Each tab on this site corresponds to a different package from Tidymodels:
 * [`RSample`](RSample.html) - Re-sample and split training/testing data
 * [`Recipes`](Recipes.html) - Create "pre-processing objects" that apply transformations to data 
 * [`Parsnip`](Parsnip.html) - Common, simple interface for model initiation
-* [`Workflows`](Workflows.html) - Bundle recipes and models into a single object
 * [`Yardstick`](Yardstick.html) - Evaluate model performance
+* [`Workflows`](Workflows.html) - Bundle recipes and models into a single object
+* [`Workflowsets`](WorkflowSets.html) - Create and compare sets of workflows
+* [`Tune`](Tune.html) - Tune hyperparameters for models 
 
-The [Code](Code.html) page contains the complete code that makes up the modeling example walked through on each tab. 
+Additionally, this page walks through some examples of modeling with tidymodels:
 
-Additionally, there are other core Tidymodels packages not covered here:
-
-* [`Tune`](https://tune.tidymodels.org/) - tune hyperparameters for models
-* [`Dials`](https://dials.tidymodels.org/) - infrastructure for model tuning 
-* [`Broom`](https://broom.tidymodels.org/) - summarize key model facts 
+* [Iris](Iris.html) - Predicting Iris species from measurements.
 
 <br>
 
 ### Dataset ###
 
-This site introduces the tidymodels packages by walking through the complete modelling process with an example dataset, defined below. 
+This site introduces the Tidymodels packages by walking through the complete modelling process with an example dataset, defined below. 
 
 `data_iris` is a modified version of the inbuilt `iris` dataset that includes row number as a variable. 
 ```{r}
@@ -49,7 +45,7 @@ data_iris <- bind_cols(all_of(iris),
 head(data_iris)
 ```
 
-Using this example dataset, we will predict `Species` based on the other variables (row is an identification variable and not used as a predictor). 
+Using this example dataset, we will predict `Species` based on the other variables (row is an identification variable and not used as a predictor). This modelling exercise spans across multiple pages on this site -- the complete code is aggregated at the [Iris modelling example](Iris.html). 
 
 <br>
 
@@ -58,9 +54,7 @@ Using this example dataset, we will predict `Species` based on the other variabl
 * https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/ 
   * A simple walkthrough of some core Tidymodels packages and concepts. 
 * https://www.tmwr.org/
-  * A detailed guidebook of Tidymodels and general modeling concepts 
-* https://www.tidymodels.org/start/tuning/
-  * although the `tune` package isn't covered here (yet), it contains helpful functions to help optimize hyperparameters for models. This is a helpful introductory tutorial for `tune` that explores some of its capability. 
+  * A highly detailed guidebook of Tidymodels and how to create accurate models. 
   
 <br>
   

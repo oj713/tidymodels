@@ -258,17 +258,22 @@ $(document).ready(function () {
   <a href="Parsnip.html">Parsnip</a>
 </li>
 <li>
-  <a href="Workflows.html">Workflows</a>
-</li>
-<li>
   <a href="Yardstick.html">Yardstick</a>
 </li>
 <li>
-  <a href="Code.html">Code</a>
+  <a href="Workflows.html">Workflows</a>
+</li>
+<li>
+  <a href="WorkflowSets.html">WorkflowSets</a>
+</li>
+<li>
+  <a href="Tune.html">Tune</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="Iris.html">Ex. Iris</a>
+</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -290,19 +295,17 @@ $(document).ready(function () {
 <li><a href="#validation-set">Validation Set</a></li>
 <li><a href="#v-fold-cross-validation">V-Fold Cross Validation</a></li>
 <li><a href="#monte-carlo-cross-validation">Monte-Carlo Cross Validation</a></li>
-<li><a href="#bootstrapping">Bootstrapping</a></li>
-<li><a href="#rolling-forecasting-origin-resampling">Rolling Forecasting Origin Resampling</a></li>
+<li><a href="#other-resampling-methods">Other Resampling Methods</a></li>
 </ul></li>
 <li><a href="#further-resources">Further Resources</a></li>
 </ul>
 </div>
 
-<p><a href="https://rsample.tidymodels.org/" class="uri">https://rsample.tidymodels.org/</a></p>
-<p>When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset splitting and resampling.</p>
+<p>When building a model, the source dataset needs to be split in some way so that we can reserve data to both build the model and assess its performance. <a href="https://rsample.tidymodels.org/">RSample</a> contains tools for dataset splitting and resampling.</p>
 <p><br></p>
-<div id="training-testing-splits" class="section level1">
-<h1>Training / Testing Splits</h1>
-<p>To create a randomly divided training/testing split using RSample, we can use the <code>initial_split()</code> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
+<div id="training-testing-splits" class="section level2">
+<h2>Training / Testing Splits</h2>
+<p>To create a randomly divided training/testing split using RSample, we can use the <a href="https://rsample.tidymodels.org/reference/initial_split.html"><code>initial_split()</code></a> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
 <ul>
 <li>To create a time-based testing/training split, use the <code>initial_time_split()</code> function. This function works identically to <code>initial_split()</code> except that it will use the <em>first</em> <code>prop</code> samples for training instead of a random selection.</li>
 </ul>
@@ -313,30 +316,62 @@ data_split &lt;- initial_split(data_iris,
 data_split</code></pre>
 <pre><code>## &lt;Analysis/Assess/Total&gt;
 ## &lt;112/38/150&gt;</code></pre>
-<p>To retrieve the actual training and testing data, use the <code>testing()</code> and <code>training()</code> functions</p>
+<p>To retrieve the training and testing datasets from an <code>rsplit</code> object, use the <code>testing()</code> and <code>training()</code> functions</p>
 <pre class="r"><code># using training() and testing() to retrieve datasets
 data_test &lt;- testing(data_split)
 data_train &lt;- training(data_split)
 
 head(data_test)</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
+## 3           4.7         3.2          1.3         0.2  setosa   3
+## 4           4.6         3.1          1.5         0.2  setosa   4
+## 5           5.0         3.6          1.4         0.2  setosa   5
 ## 8           5.0         3.4          1.5         0.2  setosa   8
-## 22          5.1         3.7          1.5         0.4  setosa  22
-## 24          5.1         3.3          1.7         0.5  setosa  24
-## 27          5.0         3.4          1.6         0.4  setosa  27
-## 36          5.0         3.2          1.2         0.2  setosa  36
-## 38          4.9         3.6          1.4         0.1  setosa  38</code></pre>
+## 11          5.4         3.7          1.5         0.2  setosa  11
+## 16          5.7         4.4          1.5         0.4  setosa  16</code></pre>
 <p><br></p>
 </div>
-<div id="resampling" class="section level1">
-<h1>Resampling</h1>
-<p>When building a model, we usually want to estimate the performance of the model <strong>before</strong> we evaluate it with the testing set.</p>
+<div id="resampling" class="section level2">
+<h2>Resampling</h2>
+<p><em>If you are building your first model, skip this section!</em></p>
+<p>When building a model, we usually want to estimate the performance of the model <strong>before</strong> we evaluate it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set.</p>
+<p><br></p>
 <div id="validation-set" class="section level3">
 <h3>Validation Set</h3>
+<p>A validation set is a single analysis/assessment split performed on the training data. It’s best for large datasets, where we might not need multiple resamples to understand performance.</p>
+<p>Use <a href="https://rsample.tidymodels.org/reference/validation_split.html"><code>validation_split()</code></a> and <code>validation_time_split()</code> to create a validation split or time-based validation split, respectively.</p>
+<pre class="r"><code>validate &lt;- validation_split(data_train, 
+                             prop = 3/4, # proportion for analysis set
+                             strata = Species)
+
+validate</code></pre>
+<pre><code>## # Validation Set Split (0.75/0.25)  using stratification 
+## # A tibble: 1 × 2
+##   splits          id        
+##   &lt;list&gt;          &lt;chr&gt;     
+## 1 &lt;split [83/29]&gt; validation</code></pre>
+<p>We can retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
+<ul>
+<li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code>. The names are different to distinguish resampling from the original train/test split.</li>
+</ul>
+<pre class="r"><code># extracting rsplit object
+v_split &lt;- validate[[1]][[1]]
+
+# pulling analysis set 
+analysis(v_split) |&gt; head()</code></pre>
+<pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
+## 23          4.6         3.6          1.0         0.2  setosa  23
+## 28          5.2         3.5          1.5         0.2  setosa  28
+## 40          5.1         3.4          1.5         0.2  setosa  40
+## 7           4.6         3.4          1.4         0.3  setosa   7
+## 45          5.1         3.8          1.9         0.4  setosa  45
+## 26          5.0         3.0          1.6         0.2  setosa  26</code></pre>
+<p><br></p>
 </div>
 <div id="v-fold-cross-validation" class="section level3">
 <h3>V-Fold Cross Validation</h3>
-<p>Use <code>vfold_cv()</code> to create folds in your data. This function returns a table with a data split object and identification variable for each fold.</p>
+<p>V-fold cross validation splits a dataset into <em>n</em> parts, creating resamples where each part takes a turn being the validation set. V-fold cross validation sets are useful to create averaged accuracy estimates.</p>
+<p>Use <a href="https://rsample.tidymodels.org/reference/vfold_cv.html"><code>vfold_cv()</code></a> to create folds in your data. This function returns a table with a data split object and identification variable for each fold.</p>
 <pre class="r"><code>data_folds &lt;- vfold_cv(data_train, 
                        v = 5, # number of partitions in dataset 
                        repeats = 1, # times to repeat partitioning
@@ -349,34 +384,45 @@ data_folds</code></pre>
 ##   &lt;list&gt;          &lt;chr&gt;
 ## 1 &lt;split [88/24]&gt; Fold1
 ## 2 &lt;split [89/23]&gt; Fold2
-## 3 &lt;split [89/23]&gt; Fold3
-## 4 &lt;split [91/21]&gt; Fold4
+## 3 &lt;split [90/22]&gt; Fold3
+## 4 &lt;split [90/22]&gt; Fold4
 ## 5 &lt;split [91/21]&gt; Fold5</code></pre>
-<p>We can retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
-<ul>
-<li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code> and can probably be used interchangeably.</li>
-</ul>
-<pre class="r"><code># working with Fold1
-split &lt;- data_folds$splits[[1]]
-
-testing &lt;- testing(split)
-assessment &lt;- assessment(split)
-identical(testing, assessment)</code></pre>
-<pre><code>## [1] TRUE</code></pre>
+<p><br></p>
 </div>
 <div id="monte-carlo-cross-validation" class="section level3">
 <h3>Monte-Carlo Cross Validation</h3>
+<p>Monte-Carlo cross validation is similar to v-fold cross validation, except that each resample is created by randomly sampling the original dataset – meaning that there may be overlap between each resamples’s analysis set. Use <a href="https://rsample.tidymodels.org/reference/mc_cv.html"><code>mc_cv()</code></a> to create these kinds of resamples.</p>
+<pre class="r"><code>mc_split &lt;- mc_cv(data_train, 
+                  prop = 9/10, # proportion to use for analysis per resample
+                  times = 20, # number of resamples
+                  strata = Species)
+
+head(mc_split)</code></pre>
+<pre><code>## # A tibble: 6 × 2
+##   splits           id        
+##   &lt;list&gt;           &lt;chr&gt;     
+## 1 &lt;split [100/12]&gt; Resample01
+## 2 &lt;split [100/12]&gt; Resample02
+## 3 &lt;split [100/12]&gt; Resample03
+## 4 &lt;split [100/12]&gt; Resample04
+## 5 &lt;split [100/12]&gt; Resample05
+## 6 &lt;split [100/12]&gt; Resample06</code></pre>
+<p><br></p>
 </div>
-<div id="bootstrapping" class="section level3">
-<h3>Bootstrapping</h3>
-</div>
-<div id="rolling-forecasting-origin-resampling" class="section level3">
-<h3>Rolling Forecasting Origin Resampling</h3>
+<div id="other-resampling-methods" class="section level3">
+<h3>Other Resampling Methods</h3>
+<p>There are a variety of other resampling methods supported by <code>RSample</code>. A subset of other important resampling methods are below:</p>
+<ul>
+<li><strong>Bootstrapping</strong>: <a href="https://rsample.tidymodels.org/reference/bootstraps.html"><code>bootstraps()</code></a> creates random resamples <em>with replacement</em>, allowing duplicates in the training sets.</li>
+<li><strong>Rolling Forecast Origin</strong>: <a href="https://rsample.tidymodels.org/reference/rolling_origin.html"><code>rolling_origin()</code></a> creates resamples for datasets with a strong time-based component. Training sets are selected sequentially, with origin point shifting by a set amount.</li>
+<li><strong>Leave-One-Out</strong>: <a href="https://rsample.tidymodels.org/reference/loo_cv.html"><code>loo_cv()</code></a> creates resamples where one point is held out for assessment and all others are used for analysis. There are as many resamples as data points.</li>
+</ul>
+<p>For a full list of resampling techniques, visit the official <a href="https://rsample.tidymodels.org/reference/index.html">RSample Reference</a>.</p>
 <p><br></p>
 </div>
 </div>
-<div id="further-resources" class="section level1">
-<h1>Further Resources</h1>
+<div id="further-resources" class="section level2">
+<h2>Further Resources</h2>
 <ul>
 <li><a href="https://rsample.tidymodels.org/articles/Working_with_rsets.html" class="uri">https://rsample.tidymodels.org/articles/Working_with_rsets.html</a>
 <ul>

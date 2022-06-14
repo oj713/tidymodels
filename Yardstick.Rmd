@@ -8,11 +8,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 source("setup.R")
 ```
-https://yardstick.tidymodels.org/
 
-The final step of building a model is to evaluate its performance. The `yardstick` package contains various methods to summarize and display model results in a tidy manner. 
-
-We will be evaluating the accuracy of our iris model based on the augmented `iris_preds` data defined in [Workflows Tutorial](Workflows.html). As a note, the predictions have a 100% accuracy rate, so the resulting metrics might not be very illustrative.
+The final step of building a model is to evaluate its performance. The [`Yardstick`](https://yardstick.tidymodels.org/) package contains various methods to summarize and display model results in a tidy manner. 
 
 <br>
 
@@ -22,6 +19,8 @@ We will be evaluating the accuracy of our iris model based on the augmented `iri
 
 * **Input:** Each `yardstick` metric method takes as argument a dataframe, truth column, and estimate column(s). 
 * **Output:** Results will be returned as a tibble containing `metric`, `estimator`, and `estimate` information. 
+
+We will generate accuracy metrics for the `iris_preds` data defined in the [Parsnip Tutorial](Parsnip.html). As a note, the predictions have a 100% accuracy rate, so the resulting metrics might not be very illustrative.
 
 ```{r}
 # computing roc_auc and accuracy for iris predictions
@@ -34,10 +33,10 @@ accuracy(iris_preds,
          estimate = .pred_class)
 ```
 
-All metric methods also have a corresponding vectorized method (ending with `_vec`) that simply takes in the truth and estimate vectors and returns the desired metric. 
+All metric methods also have a corresponding vectorized method (ending with `_vec`) that takes in truth and estimate as vectors and returns the desired metric raw. 
 
 ```{r}
-# using the vectoized accuracy metric
+# using the vectorized accuracy metric
 accuracy_vec(iris_preds$Species, 
              iris_preds$.pred_class)
 ```
@@ -48,7 +47,7 @@ For a full list of `yardstick` functions, look at the [Official Reference](https
 
 ### Curve Functions ###
 
-`yardstick` contains four curve-based functions: `roc_curve()`, `gain_curve()`, `pr_curve()`, and `lift_curve()`. These methods all have corresponding `ggplot2::autoplot()` methods that allow for easy visualization. 
+`yardstick` contains four curve-based functions: [`roc_curve()`](https://yardstick.tidymodels.org/reference/roc_curve.html), [`gain_curve()`](https://yardstick.tidymodels.org/reference/gain_curve.html), [`pr_curve()`](https://yardstick.tidymodels.org/reference/pr_curve.html), and [`lift_curve()`](https://yardstick.tidymodels.org/reference/lift_curve.html. These methods all have corresponding `ggplot2::autoplot()` methods that allow for easy visualization. 
 
 ```{r}
 # note that the arguments are the same as those for roc_auc
@@ -58,7 +57,7 @@ roc_curve(iris_preds, truth = Species, .pred_setosa:.pred_virginica) |>
 
 ### Metric Sets ###
 
-If you want to extract multiple metrics from a dataset, you can package them together into a single method call using [`metric_set()`](https://yardstick.tidymodels.org/reference/metric_set.html). The created method will return each desired metric and its estimate in a tibble.
+If you want to extract multiple metrics from a dataset, you can package those metrics into a single method call using [`metric_set()`](https://yardstick.tidymodels.org/reference/metric_set.html). The created method will return each desired metric and its estimate in a tibble.
 
 * Note that metric sets can only contain either classification or regression metrics -- **not** a mix of both. 
 

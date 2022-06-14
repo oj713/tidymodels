@@ -1,0 +1,23 @@
+---
+title: "Tune"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+source("setup.R")
+```
+
+Models usually work poorly before they work well. [`Tune`](https://tune.tidymodels.org/) contains tools to tune hyperparameters. 
+
+**Note:** `Tune` is a complex package and I don't understand significant chunks 
+
+<br>
+
+#W
+
+### Further Resources ###
+
+* https://www.tmwr.org/compare.html
+  * Covers Workflow sets 

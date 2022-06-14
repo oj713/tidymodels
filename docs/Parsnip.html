@@ -258,17 +258,22 @@ $(document).ready(function () {
   <a href="Parsnip.html">Parsnip</a>
 </li>
 <li>
-  <a href="Workflows.html">Workflows</a>
-</li>
-<li>
   <a href="Yardstick.html">Yardstick</a>
 </li>
 <li>
-  <a href="Code.html">Code</a>
+  <a href="Workflows.html">Workflows</a>
+</li>
+<li>
+  <a href="WorkflowSets.html">WorkflowSets</a>
+</li>
+<li>
+  <a href="Tune.html">Tune</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="Iris.html">Ex. Iris</a>
+</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -292,25 +297,24 @@ $(document).ready(function () {
 </ul>
 </div>
 
-<p><a href="https://parsnip.tidymodels.org/" class="uri">https://parsnip.tidymodels.org/</a></p>
-<p>When building a model for your dataset, there are a wide variety of models and model packages that each have their own unique parameters and specifications. <code>parsnip</code> provides a unified, simple interface for model creation so that you can easily swap between models without worrying about minor syntax changes.</p>
+<p>When building a model for your dataset, there are a wide variety of models and model packages that each have their own unique parameters and specifications. <a href="https://parsnip.tidymodels.org/"><code>Parsnip</code></a> provides a unified, simple interface for model creation so that you can easily swap between models without worrying about minor syntax changes.</p>
 <p><br></p>
 <div id="initializing-a-model" class="section level3">
 <h3>Initializing a Model</h3>
 <p>A <code>parsnip</code> model is built by defining an initial model object, setting its parameters/engine, and then fitting the model to data. Each type of supported model has its own initializing function.</p>
-<p>For example, suppose we wanted to create a linear regression model. To initiate this model, we would call the <code>linear_reg()</code> function.</p>
+<p>For example, suppose we wanted to create a linear regression model. To initiate this model, we would call the <a href="https://parsnip.tidymodels.org/reference/linear_reg.html"><code>linear_reg()</code></a> function.</p>
 <pre class="r"><code>lr &lt;- linear_reg()</code></pre>
-<p>Alternatively, to initialize a random forest model we would use the <code>rand_forest()</code> function.</p>
+<p>Alternatively, to initialize a random forest model we would use the <a href="https://parsnip.tidymodels.org/reference/rand_forest.html"><code>rand_forest()</code></a> function.</p>
 <pre class="r"><code>rf &lt;- rand_forest()</code></pre>
-<p>Other models supported include logistic regressions, boosted trees, k nearest neighbors, and more. For a full list of supported models see the official <a href="https://parsnip.tidymodels.org/reference/index.html">Function Reference</a>.</p>
+<p>Other models supported include logistic regression, boosted trees, k nearest neighbors, and more. For a full list of supported models see the official <a href="https://parsnip.tidymodels.org/reference/index.html">Function Reference</a>.</p>
 <p><br></p>
 </div>
 <div id="setting-parameters" class="section level3">
 <h3>Setting Parameters</h3>
 <p>Once we’ve initialized a model, we can set its specifications/parameters.</p>
 <ul>
-<li><p><strong><code>set_mode()</code></strong> determines whether the model is a classification or regression model. Not every model has both options – for example, <code>linear_reg()</code> only supports regression while <code>logistic_reg()</code> only supports classification.</p></li>
-<li><p><strong><code>set_args()</code></strong> sets parameters specific to the model type. The names of these arguments are standardized so that similar parameters across models have the same name – for example, <code>penalty</code> is the name of the regularization argument, if a model has one.</p></li>
+<li><p><a href="https://parsnip.tidymodels.org/reference/set_args.html"><strong><code>set_mode()</code></strong></a> determines whether the model is a classification or regression model. Not every model has both options – for example, <code>linear_reg()</code> only supports regression.</p></li>
+<li><p><a href="https://parsnip.tidymodels.org/reference/set_args.html"><strong><code>set_args()</code></strong></a> sets parameters specific to the model type. The names of these arguments are standardized so that similar parameters across models have the same name – for example, <code>penalty</code> is the name of the regularization argument, if a model has one.</p></li>
 </ul>
 <pre class="r"><code># setting mode and parameters for both of our example models 
 # note that you don&#39;t need to set every model parameter if you&#39;re happy with the defaults
@@ -322,10 +326,12 @@ rf &lt;- rf |&gt;
   set_mode(&quot;classification&quot;) |&gt;
   set_args(trees = 500)</code></pre>
 <ul>
-<li><strong><code>set_engine()</code></strong> determines the model <em>engine</em>, or package that will handle model creation. For many models, there are multiple packages that can run that model, each with their own unique syntax and interface. <code>parsnip</code> regularizes the interface, but doesn’t replace the modeling package – meaning that we must specify which package we’d like to use. If later on we’d like to switch engines, simply change the argument for <code>set_engine()</code>.
+<li><a href="https://parsnip.tidymodels.org/reference/set_engine.html"><strong><code>set_engine()</code></strong></a> determines the model <em>engine</em>, or package that will handle model creation. For many models, there are multiple packages that can run that model, each with their own unique syntax and interface. <code>parsnip</code> regularizes the interface, but doesn’t replace the modeling package – meaning that we must specify which package we’d like to use. If later on we’d like to switch engines, simply change the argument for <code>set_engine()</code>.
 <ul>
 <li>you might have to install the package for the desired engine.</li>
-<li>use <code>show_engines()</code> to retrieve a list of all supported engines for a model. Some engines require a <code>parsnip</code> extension package and are not shown.</li>
+<li>use <a href="https://parsnip.tidymodels.org/reference/show_engines.html"><code>show_engines()</code></a> retrieve a list of all supported engines for a model. Some engines require a <code>parsnip</code> extension package and may not be shown.</li>
+<li>To see how <code>parsnip</code> arguments transfer to a specific engine, use the <a href="https://parsnip.tidymodels.org/reference/translate.html"><code>translate()</code></a> method.</li>
+<li>Some models have engine-specific arguments that do not translate to other engines. Pass these arguments to <code>set_engine()</code>.</li>
 </ul></li>
 </ul>
 <pre class="r"><code># what engines are available for random forest?
@@ -339,72 +345,82 @@ show_engines(&quot;rand_forest&quot;)</code></pre>
 ## 4 randomForest regression    
 ## 5 spark        classification
 ## 6 spark        regression</code></pre>
-<pre class="r"><code># setting the engine to randomForest
+<pre class="r"><code># setting the engine to randomForest 
+# note the engine-specific argument used in this call 
 rf &lt;- rf |&gt;
-  set_engine(&quot;randomForest&quot;)
+  set_engine(&quot;ranger&quot;, verbose = TRUE)
 
 # if I want to change the engine, I could simply call set_engine() again
 rf &lt;- rf |&gt;
-  set_engine(&quot;ranger&quot;)
+  set_engine(&quot;randomForest&quot;)
 
-# call the model to take a look at its specifications 
-rf</code></pre>
+# using translate() to view the model and how parsnip arguments transfer to the randomForest package
+translate(rf)</code></pre>
 <pre><code>## Random Forest Model Specification (classification)
 ## 
 ## Main Arguments:
 ##   trees = 500
 ## 
-## Computational engine: ranger</code></pre>
-<p><strong>Note</strong>: These arguments can also be specified within the initial model call. However, setting them with separate functions enhances readability and creates a more flexible interface.</p>
-<pre class="r"><code># defining all parameters in initial function call 
-rf2 &lt;- rand_forest(mode = &quot;classification&quot;, 
-                   engine = &quot;ranger&quot;, 
-                   trees = 500)
-
-#identical to rf
-rf2</code></pre>
+## Computational engine: randomForest 
+## 
+## Model fit template:
+## randomForest::randomForest(x = missing_arg(), y = missing_arg(), 
+##     ntree = 500)</code></pre>
+<p><strong>Note</strong>: Mode, engine, and model arguments can be specified within the initial model call. However, setting them with separate functions enhances readability and creates a more flexible interface.</p>
+<ul>
+<li>Engine-specific arguments must be declared within <code>set_engine()</code>.</li>
+</ul>
+<pre class="r"><code># defining parameters within initial call
+rand_forest(mode = &quot;classification&quot;, 
+            engine = &quot;randomForest&quot;, 
+            trees = 500)</code></pre>
 <pre><code>## Random Forest Model Specification (classification)
 ## 
 ## Main Arguments:
 ##   trees = 500
 ## 
-## Computational engine: ranger</code></pre>
+## Computational engine: randomForest</code></pre>
 <p><br></p>
 </div>
 <div id="fitting" class="section level3">
 <h3>Fitting</h3>
-<p>Once a model has been initialized and defined, we can execute the model on our prepped training data using the <code>fit()</code> function. <code>fit()</code> takes in a formula and a model object and returns a trained model.</p>
-<p>We will use the <code>prepped_training</code> and <code>prepped_testing</code> datasets defined in the <a href="Recipes.html">Recipes Tutorial</a>.</p>
-<pre class="r"><code># fitting our random forest model to our training data
-rf_fit &lt;- rf |&gt;
-  fit(Species ~ Sepal.Length + Sepal.Width + Petal.Width, data = prepped_training)
+<p>Once a model has been initialized and defined, we can execute the model on our prepped training data using the <code>fit()</code> function. <code>fit()</code> takes in a formula and a model object and returns a fitted model.</p>
+<p>We will use the <code>iris_recipe_prepped</code>, <code>prepped_training</code> and <code>prepped_testing</code> datasets defined in the <a href="Recipes.html">Recipes Tutorial</a>.</p>
+<pre class="r"><code># extracting model formula from prepped recipe object
+rf_formula &lt;- formula(iris_recipe_prepped)
+
+# fitting our random forest model to our training data
+rf_fit &lt;- fit(rf, rf_formula, data = prepped_training)
 
 # taking a look at our fitted model
 rf_fit </code></pre>
 <pre><code>## parsnip model object
 ## 
-## Ranger result
 ## 
 ## Call:
-##  ranger::ranger(x = maybe_data_frame(x), y = y, num.trees = ~500,      num.threads = 1, verbose = FALSE, seed = sample.int(10^5,          1), probability = TRUE) 
+##  randomForest(x = maybe_data_frame(x), y = y, ntree = ~500) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 2
 ## 
-## Type:                             Probability estimation 
-## Number of trees:                  500 
-## Sample size:                      112 
-## Number of independent variables:  3 
-## Mtry:                             1 
-## Target node size:                 10 
-## Variable importance mode:         none 
-## Splitrule:                        gini 
-## OOB prediction error (Brier s.):  0.06429827</code></pre>
-<p><strong>Note:</strong> If a model uses a specialized formula that specifies model structure as well as terms (eg. GAMs), you can use it for <code>fit()</code>.</p>
-<p><strong>Note:</strong> If your prepped data has non-outcome/predictor variables, you will need to manually exclude them from the formula to fit a model object. In this example, <code>prepped_training</code> has a <code>row</code> column that had an “Identification” role in the recipe – here, we must deliberately exclude it from the formula. Non-outcome/predictor variables are best used within a <a href="Workflows.html"><code>workflow</code></a> object, as the formula generated by the recipe’s roles is directly passed to the model object.</p>
+##         OOB estimate of  error rate: 0%
+## Confusion matrix:
+##            setosa versicolor virginica class.error
+## setosa         44          0         0           0
+## versicolor      0         36         0           0
+## virginica       0          0        32           0</code></pre>
+<p><strong>Note:</strong> If a model uses a specialized formula that specifies model structure as well as terms (eg. GAMs), pass it to <code>fit()</code>.</p>
+<p><strong>Note:</strong> If the recipe used to preprocess data modified any roles from your original formula, be sure to extract your model formula from the recipe object to account for those changes.</p>
 <p><br></p>
 </div>
 <div id="predicting" class="section level3">
 <h3>Predicting</h3>
-<p>In order to generate predictions from new data, pass the fitted model and a dataset to either the <code>predict()</code> or <code>augment()</code> functions. <code>predict()</code> will return a tibble of predictions, and <code>augment()</code> will bind the new prediction columns to the input data.</p>
-<pre class="r"><code># generating prediction class
+<p>In order to generate predictions from new data, pass the fitted model and a dataset to either the <a href="https://parsnip.tidymodels.org/reference/predict.model_fit.html"><code>predict()</code></a> or <a href="https://parsnip.tidymodels.org/reference/augment.html"><code>augment()</code></a> methods <code>predict()</code> will return a tibble of predictions, and <code>augment()</code> will bind prediction columns to the input data.</p>
+<ul>
+<li>Predictions are returned as a tibble with predictable column names.</li>
+<li><code>predict()</code> has a <code>type</code> argument used to specify prediction type. Options for <code>type</code> are “numeric”, “class”, “prob”, “conf_int”, “pred_int”, “quantile”, “time”, “hazard”, “survival”, or “raw”. <code>type</code> defaults to either “numeric” or “class” depending on model mode. Not all <code>type</code> options will work for every model.</li>
+</ul>
+<pre class="r"><code># generating predictions
 predict(rf_fit, prepped_testing) |&gt;
   head()</code></pre>
 <pre><code>## # A tibble: 6 × 1
@@ -422,24 +438,27 @@ predict(rf_fit, prepped_testing, type = &quot;prob&quot;) |&gt;
 <pre><code>## # A tibble: 6 × 3
 ##   .pred_setosa .pred_versicolor .pred_virginica
 ##          &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
-## 1        0.999          0              0.000508
-## 2        0.974          0.0149         0.0111  
-## 3        0.993          0.00404        0.00302 
-## 4        0.957          0.0316         0.0118  
-## 5        0.982          0.0155         0.00247 
-## 6        0.976          0.0201         0.00427</code></pre>
-<pre class="r"><code># augment binds prediction class and prediction probabilities to original data
-augment(rf_fit, prepped_testing) |&gt;
-  head()</code></pre>
+## 1        0.998            0.002               0
+## 2        0.998            0.002               0
+## 3        0.998            0.002               0
+## 4        1                0                   0
+## 5        1                0                   0
+## 6        1                0                   0</code></pre>
+<pre class="r"><code># augment binds predictions to original data
+# augment does not have a type argument
+iris_preds &lt;- augment(rf_fit, prepped_testing) 
+
+head(iris_preds)</code></pre>
 <pre><code>## # A tibble: 6 × 9
 ##   Sepal.Length Sepal.Width Petal.Width   Row Species .pred_class .pred_setosa .pred_versicolor .pred_virginica
 ##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
-## 1       -0.959      1.03         -1.35     1 setosa  setosa             0.999          0              0.000508
-## 2       -0.602      2.01         -1.10     6 setosa  setosa             0.974          0.0149         0.0111  
-## 3       -1.55       0.783        -1.22     7 setosa  setosa             0.993          0.00404        0.00302 
-## 4       -1.20       0.0502       -1.48    10 setosa  setosa             0.957          0.0316         0.0118  
-## 5       -1.91      -0.194        -1.48    14 setosa  setosa             0.982          0.0155         0.00247 
-## 6       -1.32       0.0502       -1.35    31 setosa  setosa             0.976          0.0201         0.00427</code></pre>
+## 1        -1.10     -0.246        -1.17     2 setosa  setosa             0.998            0.002               0
+## 2        -1.73     -0.462        -1.17     9 setosa  setosa             0.998            0.002               0
+## 3        -1.23     -0.246        -1.30    13 setosa  setosa             0.998            0.002               0
+## 4        -1.23     -0.0308       -1.17    31 setosa  setosa             1                0                   0
+## 5        -1.73     -0.246        -1.17    39 setosa  setosa             1                0                   0
+## 6        -1.48      0.185        -1.17    48 setosa  setosa             1                0                   0</code></pre>
+<p>Methods to fit resampling sets are covered in the <a href="%22Tune.html%22">Tune Tutorial</a>.</p>
 <p><br></p>
 </div>
 <div id="further-resources" class="section level3">

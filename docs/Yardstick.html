@@ -258,17 +258,22 @@ $(document).ready(function () {
   <a href="Parsnip.html">Parsnip</a>
 </li>
 <li>
-  <a href="Workflows.html">Workflows</a>
-</li>
-<li>
   <a href="Yardstick.html">Yardstick</a>
 </li>
 <li>
-  <a href="Code.html">Code</a>
+  <a href="Workflows.html">Workflows</a>
+</li>
+<li>
+  <a href="WorkflowSets.html">WorkflowSets</a>
+</li>
+<li>
+  <a href="Tune.html">Tune</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="Iris.html">Ex. Iris</a>
+</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -290,9 +295,7 @@ $(document).ready(function () {
 </ul>
 </div>
 
-<p><a href="https://yardstick.tidymodels.org/" class="uri">https://yardstick.tidymodels.org/</a></p>
-<p>The final step of building a model is to evaluate its performance. The <code>yardstick</code> package contains various methods to summarize and display model results in a tidy manner.</p>
-<p>We will be evaluating the accuracy of our iris model based on the augmented <code>iris_preds</code> data defined in <a href="Workflows.html">Workflows Tutorial</a>. As a note, the predictions have a 100% accuracy rate, so the resulting metrics might not be very illustrative.</p>
+<p>The final step of building a model is to evaluate its performance. The <a href="https://yardstick.tidymodels.org/"><code>Yardstick</code></a> package contains various methods to summarize and display model results in a tidy manner.</p>
 <p><br></p>
 <div id="metric-methods" class="section level3">
 <h3>Metric Methods</h3>
@@ -301,6 +304,7 @@ $(document).ready(function () {
 <li><strong>Input:</strong> Each <code>yardstick</code> metric method takes as argument a dataframe, truth column, and estimate column(s).</li>
 <li><strong>Output:</strong> Results will be returned as a tibble containing <code>metric</code>, <code>estimator</code>, and <code>estimate</code> information.</li>
 </ul>
+<p>We will generate accuracy metrics for the <code>iris_preds</code> data defined in the <a href="Parsnip.html">Parsnip Tutorial</a>. As a note, the predictions have a 100% accuracy rate, so the resulting metrics might not be very illustrative.</p>
 <pre class="r"><code># computing roc_auc and accuracy for iris predictions
 roc_auc(iris_preds,
         truth = Species, 
@@ -316,8 +320,8 @@ roc_auc(iris_preds,
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
 ## 1 accuracy multiclass         1</code></pre>
-<p>All metric methods also have a corresponding vectorized method (ending with <code>_vec</code>) that simply takes in the truth and estimate vectors and returns the desired metric.</p>
-<pre class="r"><code># using the vectoized accuracy metric
+<p>All metric methods also have a corresponding vectorized method (ending with <code>_vec</code>) that takes in truth and estimate as vectors and returns the desired metric raw.</p>
+<pre class="r"><code># using the vectorized accuracy metric
 accuracy_vec(iris_preds$Species, 
              iris_preds$.pred_class)</code></pre>
 <pre><code>## [1] 1</code></pre>
@@ -326,7 +330,7 @@ accuracy_vec(iris_preds$Species,
 </div>
 <div id="curve-functions" class="section level3">
 <h3>Curve Functions</h3>
-<p><code>yardstick</code> contains four curve-based functions: <code>roc_curve()</code>, <code>gain_curve()</code>, <code>pr_curve()</code>, and <code>lift_curve()</code>. These methods all have corresponding <code>ggplot2::autoplot()</code> methods that allow for easy visualization.</p>
+<p><code>yardstick</code> contains four curve-based functions: <a href="https://yardstick.tidymodels.org/reference/roc_curve.html"><code>roc_curve()</code></a>, <a href="https://yardstick.tidymodels.org/reference/gain_curve.html"><code>gain_curve()</code></a>, <a href="https://yardstick.tidymodels.org/reference/pr_curve.html"><code>pr_curve()</code></a>, and [<code>lift_curve()</code>](<a href="https://yardstick.tidymodels.org/reference/lift_curve.html" class="uri">https://yardstick.tidymodels.org/reference/lift_curve.html</a>. These methods all have corresponding <code>ggplot2::autoplot()</code> methods that allow for easy visualization.</p>
 <pre class="r"><code># note that the arguments are the same as those for roc_auc
 roc_curve(iris_preds, truth = Species, .pred_setosa:.pred_virginica) |&gt;
   autoplot()</code></pre>
@@ -334,7 +338,7 @@ roc_curve(iris_preds, truth = Species, .pred_setosa:.pred_virginica) |&gt;
 </div>
 <div id="metric-sets" class="section level3">
 <h3>Metric Sets</h3>
-<p>If you want to extract multiple metrics from a dataset, you can package them together into a single method call using <a href="https://yardstick.tidymodels.org/reference/metric_set.html"><code>metric_set()</code></a>. The created method will return each desired metric and its estimate in a tibble.</p>
+<p>If you want to extract multiple metrics from a dataset, you can package those metrics into a single method call using <a href="https://yardstick.tidymodels.org/reference/metric_set.html"><code>metric_set()</code></a>. The created method will return each desired metric and its estimate in a tibble.</p>
 <ul>
 <li>Note that metric sets can only contain either classification or regression metrics – <strong>not</strong> a mix of both.</li>
 </ul>

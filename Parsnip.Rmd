@@ -9,9 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 source("setup.R")
 ```
 
-https://parsnip.tidymodels.org/
-
-When building a model for your dataset, there are a wide variety of models and model packages that each have their own unique parameters and specifications. `parsnip` provides a unified, simple interface for model creation so that you can easily swap between models without worrying about minor syntax changes. 
+When building a model for your dataset, there are a wide variety of models and model packages that each have their own unique parameters and specifications. [`Parsnip`](https://parsnip.tidymodels.org/) provides a unified, simple interface for model creation so that you can easily swap between models without worrying about minor syntax changes. 
 
 <br>
 
@@ -19,19 +17,19 @@ When building a model for your dataset, there are a wide variety of models and m
 
 A `parsnip` model is built by defining an initial model object, setting its parameters/engine, and then fitting the model to data. Each type of supported model has its own initializing function. 
 
-For example, suppose we wanted to create a linear regression model. To initiate this model, we would call the `linear_reg()` function. 
+For example, suppose we wanted to create a linear regression model. To initiate this model, we would call the [`linear_reg()`](https://parsnip.tidymodels.org/reference/linear_reg.html) function. 
 
 ```{r} 
 lr <- linear_reg()
 ```
 
-Alternatively, to initialize a random forest model we would use the `rand_forest()` function. 
+Alternatively, to initialize a random forest model we would use the [`rand_forest()`](https://parsnip.tidymodels.org/reference/rand_forest.html) function. 
 
 ```{r}
 rf <- rand_forest()
 ```
 
-Other models supported include logistic regressions, boosted trees, k nearest neighbors, and more. For a full list of supported models see the official [Function Reference](https://parsnip.tidymodels.org/reference/index.html).
+Other models supported include logistic regression, boosted trees, k nearest neighbors, and more. For a full list of supported models see the official [Function Reference](https://parsnip.tidymodels.org/reference/index.html).
 
 <br>
 
@@ -39,9 +37,9 @@ Other models supported include logistic regressions, boosted trees, k nearest ne
 
 Once we've initialized a model, we can set its specifications/parameters. 
 
-* **`set_mode()`** determines whether the model is a classification or regression model. Not every model has both options -- for example, `linear_reg()` only supports regression while `logistic_reg()` only supports classification. 
+* [**`set_mode()`**](https://parsnip.tidymodels.org/reference/set_args.html) determines whether the model is a classification or regression model. Not every model has both options -- for example, `linear_reg()` only supports regression. 
 
-* **`set_args()`** sets parameters specific to the model type. The names of these arguments are standardized so that similar parameters across models have the same name -- for example, `penalty` is the name of the regularization argument, if a model has one. 
+* [**`set_args()`**](https://parsnip.tidymodels.org/reference/set_args.html) sets parameters specific to the model type. The names of these arguments are standardized so that similar parameters across models have the same name -- for example, `penalty` is the name of the regularization argument, if a model has one. 
 
 ```{r modeargs}
 # setting mode and parameters for both of our example models 
@@ -55,68 +53,75 @@ rf <- rf |>
   set_args(trees = 500)
 ```
 
-* **`set_engine()`** determines the model *engine*, or package that will handle model creation. For many models, there are multiple packages that can run that model, each with their own unique syntax and interface. `parsnip` regularizes the interface, but doesn't replace the modeling package -- meaning that we must specify which package we'd like to use. If later on we'd like to switch engines, simply change the argument for `set_engine()`. 
+* [**`set_engine()`**](https://parsnip.tidymodels.org/reference/set_engine.html) determines the model *engine*, or package that will handle model creation. For many models, there are multiple packages that can run that model, each with their own unique syntax and interface. `parsnip` regularizes the interface, but doesn't replace the modeling package -- meaning that we must specify which package we'd like to use. If later on we'd like to switch engines, simply change the argument for `set_engine()`. 
   * you might have to install the package for the desired engine. 
-  * use `show_engines()` to retrieve a list of all supported engines for a model. Some engines require a `parsnip` extension package and are not shown. 
+  * use [`show_engines()`](https://parsnip.tidymodels.org/reference/show_engines.html) retrieve a list of all supported engines for a model. Some engines require a `parsnip` extension package and may not be shown. 
+  * To see how `parsnip` arguments transfer to a specific engine, use the [`translate()`](https://parsnip.tidymodels.org/reference/translate.html) method. 
+  * Some models have engine-specific arguments that do not translate to other engines. Pass these arguments to `set_engine()`. 
 
 ```{r engines}
 # what engines are available for random forest?
 show_engines("rand_forest")
 
-# setting the engine to randomForest
+# setting the engine to randomForest 
+# note the engine-specific argument used in this call 
 rf <- rf |>
-  set_engine("randomForest")
+  set_engine("ranger", verbose = TRUE)
 
 # if I want to change the engine, I could simply call set_engine() again
 rf <- rf |>
-  set_engine("ranger")
+  set_engine("randomForest")
 
-# call the model to take a look at its specifications 
-rf
+# using translate() to view the model and how parsnip arguments transfer to the randomForest package
+translate(rf)
 ```
 
-**Note**: These arguments can also be specified within the initial model call. However, setting them with separate functions enhances readability and creates a more flexible interface. 
+**Note**: Mode, engine, and model arguments can be specified within the initial model call. However, setting them with separate functions enhances readability and creates a more flexible interface.
+
+* Engine-specific arguments must be declared within `set_engine()`. 
 
 ```{r}
-# defining all parameters in initial function call 
-rf2 <- rand_forest(mode = "classification", 
-                   engine = "ranger", 
-                   trees = 500)
-
-#identical to rf
-rf2
+# defining parameters within initial call
+rand_forest(mode = "classification", 
+            engine = "randomForest", 
+            trees = 500)
 ```
 
 <br>
 
 ### Fitting ###
 
-Once a model has been initialized and defined, we can execute the model on our prepped training data using the `fit()` function. `fit()` takes in a formula and a model object and returns a trained model. 
+Once a model has been initialized and defined, we can execute the model on our prepped training data using the `fit()` function. `fit()` takes in a formula and a model object and returns a fitted model. 
 
-We will use the `prepped_training` and `prepped_testing` datasets defined in the [Recipes Tutorial](Recipes.html). 
+We will use the `iris_recipe_prepped`, `prepped_training` and `prepped_testing` datasets defined in the [Recipes Tutorial](Recipes.html). 
 
 ```{r}
+# extracting model formula from prepped recipe object
+rf_formula <- formula(iris_recipe_prepped)
+
 # fitting our random forest model to our training data
-rf_fit <- rf |>
-  fit(Species ~ Sepal.Length + Sepal.Width + Petal.Width, data = prepped_training)
+rf_fit <- fit(rf, rf_formula, data = prepped_training)
 
 # taking a look at our fitted model
 rf_fit 
 ```
 
-**Note:** If a model uses a specialized formula that specifies model structure as well as terms (eg. GAMs), you can use it for `fit()`. 
+**Note:** If a model uses a specialized formula that specifies model structure as well as terms (eg. GAMs), pass it to `fit()`. 
 
-**Note:** If your prepped data has non-outcome/predictor variables, you will need to manually exclude them from the formula to fit a model object. In this example, `prepped_training` has a `row` column that had an "Identification" role in the recipe -- here, we must deliberately exclude it from the formula. Non-outcome/predictor variables are best used within a [`workflow`](Workflows.html) object, as the formula generated by the recipe's roles is directly passed to the model object.
+**Note:** If the recipe used to preprocess data modified any roles from your original formula, be sure to extract your model formula from the recipe object to account for those changes. 
 
 <br>
 
 ### Predicting ###
 
-In order to generate predictions from new data, pass the fitted model and a dataset to either the `predict()` or `augment()` functions. `predict()` will return a tibble of predictions, and `augment()` will bind the new prediction columns to the input data. 
+In order to generate predictions from new data, pass the fitted model and a dataset to either the [`predict()`](https://parsnip.tidymodels.org/reference/predict.model_fit.html) or [`augment()`](https://parsnip.tidymodels.org/reference/augment.html) methods `predict()` will return a tibble of predictions, and `augment()` will bind prediction columns to the input data. 
+
+* Predictions are returned as a tibble with predictable column names.
+* `predict()` has a `type` argument used to specify prediction type. Options for `type` are "numeric", "class", "prob", "conf_int", "pred_int", "quantile", "time", "hazard", "survival", or "raw". `type` defaults to either "numeric" or "class" depending on model mode. Not all `type` options will work for every model. 
 
 
 ```{r}
-# generating prediction class
+# generating predictions
 predict(rf_fit, prepped_testing) |>
   head()
 
@@ -124,10 +129,14 @@ predict(rf_fit, prepped_testing) |>
 predict(rf_fit, prepped_testing, type = "prob") |>
   head()
 
-# augment binds prediction class and prediction probabilities to original data
-augment(rf_fit, prepped_testing) |>
-  head()
+# augment binds predictions to original data
+# augment does not have a type argument
+iris_preds <- augment(rf_fit, prepped_testing) 
+
+head(iris_preds)
 ```
+
+Methods to fit resampling sets are covered in the [Tune Tutorial]("Tune.html").
 
 <br>
 

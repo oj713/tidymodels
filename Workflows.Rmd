@@ -9,47 +9,45 @@ knitr::opts_chunk$set(echo = TRUE)
 source("setup.R")
 ```
 
-https://workflows.tidymodels.org/
-
-Typically, when building a model the input data must be processed in some way, and those preprocessing steps are often specific to the model we'd like to make. `workflows` creates objects that bundles preprocessing and `parsnip` objects together, such that we can prep the data and fit the model with a single call to `fit()`
+When building a model, preprocessing steps are often specific to a certain model. `workflows` bundle preprocessing and `parsnip` objects together, such that we can prep the data and fit the model with a single call to `fit()`.
 
 <br>
 
-### Initiating a Workflow ###
+## Creating a Workflow ##
 
-We can initiate a workflow object with the `workflow()` function. You can add a preprocessor and model in the initial function call or by using the functions defined below. 
+We can initiate a workflow object with the [`workflow()`](https://workflows.tidymodels.org/reference/workflow.html) function. You can add a preprocessor and model in the initial function call or by using `add_` methods (below). 
 
 ```{r}
 wkf <- workflow(preprocessor = NULL, # pass in preprocessor here 
                 spec = NULL) # pass in model here
 ```
 
-
 <br>
 
 ### Adding a Preprocessor ###
 
-There are a few options for what you can use as a preprocessor in a workflow. 
+There are two options for a workflow preprocessor: 
 
-* **A Formula**: for simple models, you can just pass in a model formula using `add_formula()`.
-* **Variable Specifications**: instead of a formula, you can directly specify outcomes and predictors with `add_variables()`. 
+* **A Formula or Role Specifications**: for simple models which need no data transformations, the only preprocessing needed is to specify outcome and predictor variables. [`add_formula()`](https://workflows.tidymodels.org/reference/add_formula.html) allows you to pass in a formula, or you can specify outcomes and predictors directly with [`add_variables()`](https://workflows.tidymodels.org/reference/add_variables.html. 
 
 ```{r}
 wkf1 <- wkf |>
   add_formula(Species ~ .)
 
 # identical to wkf1
-# note that we can use everything() to specify predictors, as outcomes will be automatically ignored 
-wkf2 <- wkf |>
+# note the use of everything(), which will ignore variables already referenced
+wkf |>
   add_variables(outcomes = Species, predictors = everything())
 ```
 
-* **A Recipe**: for more complex pre-processing, pass in a recipe object using `add_recipe()`. Most of the time, this is a better option. For this example, we will use the `iris_recipe` defined in the [Recipes Tutorial](Recipes.html). 
+* **A Recipe**: for more complex pre-processing, pass in a recipe object using `add_recipe()`. This is more common. For this example, we will use the `iris_recipe` defined in the [Recipes Tutorial](Recipes.html). 
   * You can pass in a prepped or unprepped recipe to the workflow. If the recipe is not prepped, the workflow will prep it for you. 
 
 ```{r}
 iris_wkf <- wkf |>
   add_recipe(iris_recipe)
+
+iris_wkf
 ```
 
 Note that each `add_x()` function has accompanying `remove_x()` and `update_x()` functions to allow for workflow modification. 
@@ -58,14 +56,14 @@ Note that each `add_x()` function has accompanying `remove_x()` and `update_x()`
 
 ### Adding a Model ###
 
-All workflows must include a `parsnip` model object. Add an **unfitted** model object using `add_model()`. We will use the `rf` random forest model defined in the [Parsnip Tutorial](Parsnip.html).
+All workflows must include a `parsnip` model object. Add an **unfitted** model object using [`add_model()`](https://workflows.tidymodels.org/reference/add_model.html). We will use the `rf` random forest specification defined in the [Parsnip Tutorial](Parsnip.html).
 
 ```{r}
 iris_wkf <- iris_wkf |>
   add_model(rf)
 ```
 
-**Note:** If you are using a model with a specialized formula, add it using the `formula` argument of `add_model()`. You must use `add_model()` for this -- special formulas cannot be specified within the `workflow()` function. 
+**Note:** If you are using a model with a specialized formula, add it using the `formula` argument of `add_model()`. You must use `add_model()` for this -- special formulas cannot be specified with the `add_formula()` function. 
 
 ```{r, eval = FALSE}
 # GAMs have special syntax for formulas because of their smoothing functions
@@ -83,11 +81,12 @@ gam_wkf <- workflow() |>
 
 <br>
 
-### Fitting and Predicting with a Workflow ###
+## Fitting and Predicting ##
 
-Once we've built a workflow, we can use the `fit()`, `predict()`, and `augment()` functions in a similar method to `parsnip` in order to train the model and generate predictions. The main difference is now we can pass the raw data into these functions, rather than data already processed by a recipe. 
+After building a workflow, use [`fit()`](https://workflows.tidymodels.org/reference/fit-workflow.html), [`predict()`](https://workflows.tidymodels.org/reference/predict-workflow.html), and [`augment()`](https://workflows.tidymodels.org/reference/augment.workflow.html) just as you would with a `parsnip` model in order to train the workflow and generate predictions. Input datasets should be raw, **not** baked by a recipe. 
 
-* Note that `augment()` will now bind predictions to the unbaked input data. This is often advantageous, but if your recipe contains steps that remove rows (eg. `step_naomit()`), `augment()` will error because the input and output datasets will not have the same length. 
+* `augment(<workflow>)` will bind predictions to the unbaked input data. If a recipe contains steps that alter row number, `augment()` will error because the input and output datasets won't have the same length. 
+* `fit(<workflow>)` does not take a formula, as the workflow object contains a formula already. 
 
 We will fit and predict the workflow using the `data_split` object defined in the [RSample Tutorial](RSample.html).
 
@@ -98,14 +97,14 @@ iris_wkf <- iris_wkf |>
   fit(training(data_split)) 
 
 # using augment to generate predictions
-# notice that augment now binds predictions to the raw, unbaked input data!
-iris_preds <- augment(iris_wkf, training(data_split))
+# notice that augment now binds predictions to the unbaked input data!
+iris_preds <- augment(iris_wkf, testing(data_split))
 head(iris_preds)
 ```
 
 <br>
 
-### Examining Workflows ###
+## Examining Workflows ##
 
 We can view information about a workflow object by calling it. 
 
@@ -113,7 +112,9 @@ We can view information about a workflow object by calling it.
 iris_wkf
 ```
 
-If we want specific information from a workflow, the `workflows` package contains several extraction methods to retrieve specific aspects of the workflow, such as the fitted model or preprocessor. 
+If we want specific information from a workflow, the `workflows` package contains several extraction methods to retrieve specific aspects of the workflow, such as the fitted model or preprocessor. Several of these methods also work on `parsnip` model objects. 
+
+A complete list of extractors for workflows can be found [here](https://workflows.tidymodels.org/reference/extract-workflow.html).
 
 ```{r}
 # extracting the (unprepped) preprocessor
@@ -123,11 +124,9 @@ extract_preprocessor(iris_wkf)
 extract_fit_parsnip(iris_wkf)
 ```
 
-A complete list of extract functions for workflows can be found [here](https://workflows.tidymodels.org/reference/extract-workflow.html).
-
 <br>
 
-### Further Resources ###
+## Further Resources ##
 
 * https://www.tmwr.org/workflows.html
   * Both an introduction of and deep dive into workflows that covers more capabilities than what I have here, including workflow sets. 

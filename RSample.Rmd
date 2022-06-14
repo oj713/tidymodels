@@ -7,19 +7,17 @@ output: html_document
 source("setup.R")
 ```
 
-https://rsample.tidymodels.org/
-
-When building a model, the source dataset usually needs to be split up somehow. RSample contains tools for dataset splitting and resampling. 
+When building a model, the source dataset needs to be split in some way so that we can reserve data to both build the model and assess its performance. [RSample](https://rsample.tidymodels.org/) contains tools for dataset splitting and resampling. 
 
 <br>
 
-# Training / Testing Splits #
+## Training / Testing Splits ##
 
-To create a randomly divided training/testing split using RSample, we can use the `initial_split()` function. This function generates an `rsplit` object that contains partitioning information for the data. 
+To create a randomly divided training/testing split using RSample, we can use the [`initial_split()`](https://rsample.tidymodels.org/reference/initial_split.html) function. This function generates an `rsplit` object that contains partitioning information for the data. 
 
   * To create a time-based testing/training split, use the `initial_time_split()` function. This function works identically to `initial_split()` except that it will use the *first* `prop` samples for training instead of a random selection. 
 
-```{r}
+```{r initialsplit}
 # data_iris is defined in 'Overview'
 data_split <- initial_split(data_iris, 
                 prop = 3/4) # proportion of data to use for training
@@ -27,9 +25,9 @@ data_split <- initial_split(data_iris,
 data_split
 ```
 
-To retrieve the actual training and testing data, use the `testing()` and `training()` functions 
+To retrieve the training and testing datasets from an `rsplit` object, use the `testing()` and `training()` functions 
 
-```{r}
+```{r traintest}
 # using training() and testing() to retrieve datasets
 data_test <- testing(data_split)
 data_train <- training(data_split)
@@ -39,17 +37,48 @@ head(data_test)
 
 <br>
 
-# Resampling #
+## Resampling ##
 
-When building a model, we usually want to estimate the performance of the model **before** we evaluate it with the testing set. 
+*If you are building your first model, skip this section!*
+
+When building a model, we usually want to estimate the performance of the model **before** we evaluate it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. 
+
+<br>
 
 ### Validation Set ###
 
+A validation set is a single analysis/assessment split performed on the training data. It's best for large datasets, where we might not need multiple resamples to understand performance. 
+
+Use [`validation_split()`](https://rsample.tidymodels.org/reference/validation_split.html) and `validation_time_split()` to create a validation split or time-based validation split, respectively.
+
+```{r validation}
+validate <- validation_split(data_train, 
+                             prop = 3/4, # proportion for analysis set
+                             strata = Species)
+
+validate
+```
+We can retrieve data from a specific split object using `analysis()` and `assessment()`.
+
+* **Note:** although `analysis()` and `assessment()` support additional arguments, when simply passed an `rsplit` object they act identically to `training()` and `testing()`. The names are different to distinguish resampling from the original train/test split.  
+
+```{r analysisassess}
+# extracting rsplit object
+v_split <- validate[[1]][[1]]
+
+# pulling analysis set 
+analysis(v_split) |> head()
+```
+
+<br>
+
 ### V-Fold Cross Validation ### 
 
-Use `vfold_cv()` to create folds in your data. This function returns a table with a data split object and identification variable for each fold. 
+V-fold cross validation splits a dataset into *n* parts, creating resamples where each part takes a turn being the validation set. V-fold cross validation sets are useful to create averaged accuracy estimates.
 
-```{r}
+Use [`vfold_cv()`](https://rsample.tidymodels.org/reference/vfold_cv.html) to create folds in your data. This function returns a table with a data split object and identification variable for each fold. 
+
+```{r vfold}
 data_folds <- vfold_cv(data_train, 
                        v = 5, # number of partitions in dataset 
                        repeats = 1, # times to repeat partitioning
@@ -58,28 +87,36 @@ data_folds <- vfold_cv(data_train,
 data_folds
 ```
 
-We can retrieve data from a specific split object using `analysis()` and `assessment()`.
-
-* **Note:** although `analysis()` and `assessment()` support additional arguments, when simply passed an `rsplit` object they act identically to `training()` and `testing()` and can probably be used interchangeably. 
-
-```{r}
-# working with Fold1
-split <- data_folds$splits[[1]]
-
-testing <- testing(split)
-assessment <- assessment(split)
-identical(testing, assessment)
-```
+<br>
 
 ### Monte-Carlo Cross Validation ###
 
-### Bootstrapping ###
+Monte-Carlo cross validation is similar to v-fold cross validation, except that each resample is created by randomly sampling the original dataset -- meaning that there may be overlap between each resamples's analysis set. Use [`mc_cv()`](https://rsample.tidymodels.org/reference/mc_cv.html) to create these kinds of resamples. 
 
-### Rolling Forecasting Origin Resampling ###
+```{r mccv}
+mc_split <- mc_cv(data_train, 
+                  prop = 9/10, # proportion to use for analysis per resample
+                  times = 20, # number of resamples
+                  strata = Species)
+
+head(mc_split)
+```
 
 <br>
 
-# Further Resources #
+### Other Resampling Methods ###
+
+There are a variety of other resampling methods supported by `RSample`. A subset of other important resampling methods are below:
+
+* **Bootstrapping**: [`bootstraps()`](https://rsample.tidymodels.org/reference/bootstraps.html) creates random resamples *with replacement*, allowing duplicates in the training sets. 
+* **Rolling Forecast Origin**: [`rolling_origin()`](https://rsample.tidymodels.org/reference/rolling_origin.html) creates resamples for datasets with a strong time-based component. Training sets are selected sequentially, with origin point shifting by a set amount. 
+* **Leave-One-Out**: [`loo_cv()`](https://rsample.tidymodels.org/reference/loo_cv.html) creates resamples where one point is held out for assessment and all others are used for analysis. There are as many resamples as data points. 
+
+For a full list of resampling techniques, visit the official [RSample Reference](https://rsample.tidymodels.org/reference/index.html).
+
+<br>
+
+## Further Resources ##
 
 * https://rsample.tidymodels.org/articles/Working_with_rsets.html
   *  A helpful example of working with cross validation folds. Also covers using RSample for the bootstrap method, which isn't touched on here. 

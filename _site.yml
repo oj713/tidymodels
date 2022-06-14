@@ -11,12 +11,17 @@ navbar:
       href: Recipes.html
     - text: "Parsnip"
       href: Parsnip.html
-    - text: "Workflows"
-      href: Workflows.html
     - text: "Yardstick"
       href: Yardstick.html
-    - text: "Code"
-      href: Code.html
+    - text: "Workflows"
+      href: Workflows.html
+    - text: "WorkflowSets"
+      href: WorkflowSets.html
+    - text: "Tune"
+      href: Tune.html
+  right:
+    - text: "Ex. Iris"
+      href: Iris.html
 output:
   html_document:
     theme: cosmo

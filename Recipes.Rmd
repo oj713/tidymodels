@@ -7,9 +7,7 @@ output: html_document
 source("setup.R")
 ```
 
-https://recipes.tidymodels.org/
-
-We usually need to manipulate datasets before passing them to a model so that the model can work as effectively as possible. The `recipes` package provides a way to represent pre-processing steps as an object, so that the transformations we do to one dataset can easily be applied to another. 
+Datasets usually must be preprocessed before use in modeling, either to meet model specifications and/or improve performance. The [`Recipes`](https://recipes.tidymodels.org/) package assembles pre-processing steps into objects so that transformations to one dataset can easily be applied to others. 
 
 <br>
 
@@ -17,17 +15,20 @@ We usually need to manipulate datasets before passing them to a model so that th
 
 Recipe objects are built by creating a "blank" recipe object and then adding on data transformations via functions. 
 
-To initiate a recipe object, we can pass a formula and template dataset to the `recipe()` function. For this example, we are going to start with the `data_split` testing/training split we defined in the [RSample Tutorial](RSample.html).
+To initiate a recipe object, we can pass a formula and template dataset to the [`recipe()`](https://recipes.tidymodels.org/reference/recipe.html) function. For this example, we start with the `data_split` testing/training split we defined in the [RSample Tutorial](RSample.html).
 
 ```{r}
-# note that I could also use data_iris, head(data_iris), data_split, etc. as the template; what matters is that the names and types of the variables stay the same. For larger datasets, using head() is preferable.
+# Note that I could also use data_iris, head(data_iris), data_split, etc. as the template; what matters 
+#   is that the names and types of the variables stay the same. For larger datasets, using head() 
+#   is preferable. The exception to this rule is if you include transformations that require 
+#   a comprehensive look at the dataset, such as step_corr().
 template_data <- training(data_split)
 
 iris_recipe <- recipe(Species ~ ., 
                       data = template_data)
 ```
 
-**Note:** If you are building a recipe for a model with a specialized formula (eg. GAMs, which include smoothing functions) do not use it here. The formula should only represent outcomes and predictors, not any special operations/transformations (which can be included later in the `parsnip` model).
+**Note:** If you are building a recipe for a model with a specialized formula (eg. GAMs, which include smoothing functions), do not use it here. The formula should only represent outcomes and predictors, not any special operations/transformations (these will be incorporated within `Parsnip`).
 
 Alternatively, we can define a recipe object by passing in a template dataset, a list of all variables to be included in a model, and a list of *roles* corresponding to variables (more on this below!). This is preferable for datasets with a high number of variables. 
 
@@ -43,9 +44,9 @@ iris_recipe2 <- recipe (template_data,
 
 ### Roles ###
 
-When we create a recipe, each variable is assigned a *role*, either explicitly by the user or inferred from a formula. A variable can have any role, including outcome, predictor, ID, case weight, stratification variable, etc. The role of a variable determines how it's treated by the model. 
+When we create a recipe, each variable is assigned a *role*, either explicitly by the user or inferred from a formula. A variable can have any role, including outcome, predictor, ID, case weight, stratification variable, etc. The role of a variable determines its treatment by a recipe. 
 
-Usually, we only need outcome and predictor roles, which can be assigned automatically via a formula. We can view the roles assigned to variables by a recipe with `summary()`. 
+Usually, we only need outcome and predictor roles, which can be assigned automatically via a formula. We can view the roles assigned to variables by a recipe with [`summary()`](https://recipes.tidymodels.org/reference/summary.recipe.html). 
 
 ```{r}
 iris_recipe |> summary()
@@ -55,9 +56,9 @@ recipe(~ Sepal.Length, data = template_data) |> summary()
 recipe(Species + Sepal.Length ~ ., data = template_data) |> summary()
 ```
 
-Once we've initiated a recipe, we can change the role for a variable using the `update_role()` function. In the case of `data_iris`, we would want to make `row` an ID variable so that it won't be transformed as a predictor but will stay attached to the data for later processing. 
+Once we've initiated a recipe, we can change the role for a variable using the [`update_role()`](https://recipes.tidymodels.org/reference/roles.html) function. In the case of `data_iris`, we would want to make `row` an ID variable so that it won't be transformed as a predictor but will stay attached to the data for later processing. 
 
-* Note that `update_role()` is overriding the original formula / variable specifications passed to the recipe. 
+* Note that `update_role()` is overriding the original formula / variable specifications passed to the recipe.
 
 ```{r}
 # updating 'row' to an ID variable
@@ -65,10 +66,11 @@ iris_recipe <- iris_recipe |>
   # note that we could pass multiple variable names in to change multiple roles at once 
   update_role(row, new_role = "ID") 
 
+# viewing the updated role
 summary(iris_recipe)
 ```
 
-Once roles are assigned to variables, the `recipes` package includes several **selector functions** to easily retrieve variables with specific types and/or roles. These functions are: 
+Once roles are assigned to variables, the `recipes` package includes several [**selector functions**](https://recipes.tidymodels.org/reference/has_role.html) to easily retrieve variables with specific types and/or roles. These functions are: 
 
 * `has_role()` 
 * `has_type()`
@@ -91,36 +93,32 @@ Step functions take the following arguments:
 
 * **A recipe object**
 * **A selector function** or list of variables to which the step will be applied
-* **Optional additional specifiers** 
+* **Any method-specific arguments**
+* **A skip argument**: if `skip = TRUE`, then a step will only be applied to the template data, and not any further datasets. This is most useful for transformations to an outcome variable that is not guaranteed to exist in future datasets. Defaults to `skip = FALSE`. 
+* **`role`**: If a step creates new variables, this argument specifies their role. Optional.
 
 Some examples of step functions include: 
 
-* `step_corr()` - removes highly correlated variables
-* `step_log()` - log transforms data 
-* `step_center()` - centers variables to have a mean of 0
-* `step_scale()` - scales variables to have a standard deviation of 1 
-* `step_zv()` / `step_nzv()` - removes zero / near-zero variance predictors
-* `step_naomit()` - removes missing values
-* `step_dummy()` - converts nominal variables to *dummy/indicator* variables, which is useful when a model can only process numeric data. Note that some `parsnip` models, such as GAMs, will do this for you automatically. 
+* [`step_corr()`](https://recipes.tidymodels.org/reference/step_corr.html) - remove highly correlated variables
+* [`step_log()`](https://recipes.tidymodels.org/reference/step_log.html) - log transform data 
+* [`step_interact()`](https://recipes.tidymodels.org/reference/step_interact.html) - create interaction variables
+* [`step_center()`](https://recipes.tidymodels.org/reference/step_center.html) - center variables to have a mean of 0
+* [`step_scale()`](https://recipes.tidymodels.org/reference/step_scale.html) - scale variables to have a standard deviation of 1
+* [`step_zv()`](https://recipes.tidymodels.org/reference/step_zv.html) / [`step_nzv()`](https://recipes.tidymodels.org/reference/step_nzv.html) - remove zero / near-zero variance predictors
+* [`step_naomit()`](https://recipes.tidymodels.org/reference/step_naomit.html) - remove missing values
+* [`step_dummy()`](https://recipes.tidymodels.org/reference/step_dummy.html) - convert nominal variables to *dummy/indicator* variables, which is useful when a model can only process numeric data. Note that some `parsnip` models, such as GAMs, will do this for you automatically. 
 
-There are also several step functions that act as wrappers for common `dplyr` operations:
-
-* `step_select()`
-* `step_filter()`
-* `step_arrange()`
-* `step_sample()`
-* `step_slice()`
-* `step_rename()` and `step_rename_at()`
-* `step_mutate()` and `step_mutate_at()` - note that the new variables created by these operations have their *roles* specified within the functions' arguments. 
+There are also several step functions that act as wrappers for common `dplyr` operations, including [`step_filter()`](https://recipes.tidymodels.org/reference/step_filter.html), [`step_rename()`](https://recipes.tidymodels.org/reference/step_rename.html), and [`step_mutate()`](https://recipes.tidymodels.org/reference/step_mutate.html). 
 
 ```{r}
 # adding some steps to our iris_recipe object
 iris_recipe <- iris_recipe |>
+  # removing highly correlated variables, which can often mess up models
   step_corr(all_numeric_predictors()) |>
   # step_normalize() applies both step_center() and step_scale()
   step_normalize(all_numeric_predictors()) |>
-  # renaming the row variable 
-  step_rename(Row = row)
+  # renaming the row variable - note use of role argument
+  step_rename(Row = row, role = "ID")
 
 # calling the recipe prints its information - notice the steps listed
 iris_recipe
@@ -128,40 +126,46 @@ iris_recipe
 
 Step functions can also cover much more complex operations. For a full list of step functions, see the official [Function Reference](https://recipes.tidymodels.org/reference/index.html).
 
-**Note:** Since step functions are applied successively to a recipe object, order matters. The [Recipes Website](https://recipes.tidymodels.org/articles/Ordering.html) has some tips and tricks for how to handle ordering step functions. 
+**Note:** Since step functions are applied successively to a recipe object, order matters. The [Recipes Website](https://recipes.tidymodels.org/articles/Ordering.html) has some tips and tricks on handling step function order. 
 
 <br>
 
 ### Prepping the Recipe and Baking New Data ###
 
-Once we've added all the desired roles and steps to a recipe, we use the `prep()` function to "train" the recipe on the template data -- that is, we use the template data to estimate the parameters/quantities required by steps. 
+Once we've added all the desired roles and steps to a recipe, use the [`prep()`](https://recipes.tidymodels.org/reference/prep.html) function to "train" the recipe on the template data -- that is, use the template data to estimate the parameters/quantities required by steps. 
+
+* If we added or changed any roles from the original recipe creation, we can view that now. Use [`formula()`](https://recipes.tidymodels.org/reference/formula.recipe.html) to pull an updated formula from a prepped recipe object. 
 
 ```{r}
 # preparing the recipe using prep() 
 iris_recipe_prepped <- iris_recipe |>
   prep()
 
-# note that the steps are now trained for the template dataset
+# the steps are now trained for the template dataset
 iris_recipe_prepped
+
+# We changed the role of Row in our recipe. See that in the updated formula
+formula(iris_recipe_prepped)
 ```
 
-Finally, we can use the prepped recipe to process data. Use `juice()` to extract the processed template data from a recipe, and use `bake()` to process new data.  
+Finally, we can use the prepped recipe to process data. use [`bake()`](https://recipes.tidymodels.org/reference/bake.html) to process data.  
 
 **Note**: `prep()` **must** be called before using a recipe to bake data - otherwise, the steps are not trained and the code will error.
 
 ```{r, error = TRUE}
-# attempting to process data before calling prep(), causing an error
-bake(iris_recipe, testing(data_split))
-
-# extracting the training data using `juice()` 
-prepped_training <- juice(iris_recipe_prepped)
+# To extract the baked template data, pass in NULL as the new_data argument
+prepped_training <- bake(iris_recipe_prepped, 
+                         new_data = NULL)
 head(prepped_training)
 
-# taking a glimpse at an unprocessed data set
+# taking a glimpse at the original unprocessed testing set
 head(testing(data_split))
 
-# processing the dataset using bake()
-prepped_testing <- bake(iris_recipe_prepped, testing(data_split))
+# processing a new dataset by passing it as the new_data argument
+prepped_testing <- bake(iris_recipe_prepped, 
+                        new_data = testing(data_split))
+
+# the transformed final dataset
 head(prepped_testing)
 ```
 
@@ -173,4 +177,6 @@ head(prepped_testing)
   * A general walkthrough of the tidymodels process that pays special attention to the creation and application of recipes. 
 * https://recipes.tidymodels.org/articles/Roles.html
   * Further detail about roles in recipes 
+* https://www.tmwr.org/recipes.html
+  * Goes into further details about good practices with preprocessing and the use of some key step functions, such as `step_interact()` and `step_dummy()`. 
 
