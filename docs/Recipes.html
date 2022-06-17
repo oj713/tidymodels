@@ -264,10 +264,10 @@ $(document).ready(function () {
   <a href="Workflows.html">Workflows</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">WorkflowSets</a>
+  <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="Tune.html">Tune</a>
+  <a href="WorkflowSets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -468,7 +468,7 @@ iris_recipe_prepped</code></pre>
 <pre class="r"><code># We changed the role of Row in our recipe. See that in the updated formula
 formula(iris_recipe_prepped)</code></pre>
 <pre><code>## Species ~ Sepal.Length + Sepal.Width + Petal.Width
-## &lt;environment: 0x1182457e8&gt;</code></pre>
+## &lt;environment: 0x116634158&gt;</code></pre>
 <p>Finally, we can use the prepped recipe to process data. use <a href="https://recipes.tidymodels.org/reference/bake.html"><code>bake()</code></a> to process data.</p>
 <p><strong>Note</strong>: <code>prep()</code> <strong>must</strong> be called before using a recipe to bake data - otherwise, the steps are not trained and the code will error.</p>
 <pre class="r"><code># To extract the baked template data, pass in NULL as the new_data argument
@@ -478,21 +478,21 @@ head(prepped_training)</code></pre>
 <pre><code>## # A tibble: 6 × 5
 ##   Sepal.Length Sepal.Width Petal.Width   Row Species   
 ##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;     
-## 1        0.236      -1.96       -0.235    63 versicolor
-## 2        0.114       0.248       0.802    71 versicolor
-## 3        1.58       -0.193       1.19    103 virginica 
-## 4       -0.254      -0.193       0.413    67 versicolor
-## 5        2.32        1.57        1.32    118 virginica 
-## 6        0.726      -0.633       1.32    133 virginica</code></pre>
+## 1      0.602        0.597        0.572    57 versicolor
+## 2      0.114       -0.0716       0.439    62 versicolor
+## 3      1.09         0.597        1.77    145 virginica 
+## 4     -0.373       -1.19         0.172    90 versicolor
+## 5     -0.00762     -0.517        1.64    115 virginica 
+## 6     -1.23         0.151       -1.29     31 setosa</code></pre>
 <pre class="r"><code># taking a glimpse at the original unprocessed testing set
 head(testing(data_split))</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 2           4.9         3.0          1.4         0.2  setosa   2
 ## 4           4.6         3.1          1.5         0.2  setosa   4
+## 6           5.4         3.9          1.7         0.4  setosa   6
+## 7           4.6         3.4          1.4         0.3  setosa   7
+## 12          4.8         3.4          1.6         0.2  setosa  12
 ## 14          4.3         3.0          1.1         0.1  setosa  14
-## 16          5.7         4.4          1.5         0.4  setosa  16
-## 25          4.8         3.4          1.9         0.2  setosa  25
-## 27          5.0         3.4          1.6         0.4  setosa  27</code></pre>
+## 15          5.8         4.0          1.2         0.2  setosa  15</code></pre>
 <pre class="r"><code># processing a new dataset by passing it as the new_data argument
 prepped_testing &lt;- bake(iris_recipe_prepped, 
                         new_data = testing(data_split))
@@ -502,12 +502,12 @@ head(prepped_testing)</code></pre>
 <pre><code>## # A tibble: 6 × 5
 ##   Sepal.Length Sepal.Width Petal.Width   Row Species
 ##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;  
-## 1       -1.11      -0.193        -1.27     2 setosa 
-## 2       -1.48       0.0275       -1.27     4 setosa 
-## 3       -1.85      -0.193        -1.40    14 setosa 
-## 4       -0.131      2.89         -1.01    16 setosa 
-## 5       -1.23       0.689        -1.27    25 setosa 
-## 6       -0.989      0.689        -1.01    27 setosa</code></pre>
+## 1     -1.47         0.151        -1.29     4 setosa 
+## 2     -0.495        1.93         -1.03     6 setosa 
+## 3     -1.47         0.820        -1.16     7 setosa 
+## 4     -1.23         0.820        -1.29    12 setosa 
+## 5     -1.84        -0.0716       -1.43    14 setosa 
+## 6     -0.00762      2.16         -1.29    15 setosa</code></pre>
 <p><br></p>
 </div>
 <div id="further-resources" class="section level3">

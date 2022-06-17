@@ -15,10 +15,10 @@ navbar:
       href: Yardstick.html
     - text: "Workflows"
       href: Workflows.html
-    - text: "WorkflowSets"
-      href: WorkflowSets.html
     - text: "Tune"
       href: Tune.html
+    - text: "Workflowsets"
+      href: WorkflowSets.html
   right:
     - text: "Ex. Iris"
       href: Iris.html

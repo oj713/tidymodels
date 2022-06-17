@@ -264,10 +264,10 @@ $(document).ready(function () {
   <a href="Workflows.html">Workflows</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">WorkflowSets</a>
+  <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="Tune.html">Tune</a>
+  <a href="WorkflowSets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -289,20 +289,386 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
+<li><a href="#a-new-dataset">A New Dataset</a></li>
+<li><a href="#assessing-model-performance-with-resampling">Assessing Model Performance with Resampling</a></li>
+<li><a href="#tuning-hyperparameters">Tuning Hyperparameters</a>
+<ul>
+<li><a href="#marking-hyperparameters-for-tuning">Marking hyperparameters for tuning</a></li>
+<li><a href="#updating-parameter-limits">Updating parameter limits</a></li>
+<li><a href="#grid-search-and-tuning-the-model">Grid Search and Tuning the Model</a></li>
+<li><a href="#analysing-results-and-finalizing-the-model">Analysing Results and Finalizing the Model</a></li>
+</ul></li>
 <li><a href="#further-resources">Further Resources</a></li>
 </ul>
 </div>
 
-<p>Models usually work poorly before they work well. <a href="https://tune.tidymodels.org/"><code>Tune</code></a> contains tools to tune hyperparameters.</p>
-<p><strong>Note:</strong> <code>Tune</code> is a complex package and I don’t understand significant chunks</p>
+<p>Models usually work poorly before they work well. <a href="https://tune.tidymodels.org/"><code>Tune</code></a> contains tools to assess model perfomance across resamples and tune model hyperparameters.</p>
 <p><br></p>
-<p>#W</p>
-<div id="further-resources" class="section level3">
-<h3>Further Resources</h3>
+<div id="a-new-dataset" class="section level2">
+<h2>A New Dataset</h2>
+<p>For this example, we’re going to model abundance of <em>C. Finmarchicus</em>, a small copepod that is abundant in the North Atlantic. This dataset is sourced from the <a href="https://www.st.nmfs.noaa.gov/copepod/data/us-05101/index.html">Ecomon Survey</a> and is also available to download on <a href="https://github.com/oj713/tidymodels">my GitHub</a>.</p>
 <ul>
-<li><a href="https://www.tmwr.org/compare.html" class="uri">https://www.tmwr.org/compare.html</a>
+<li>Although some of these steps could be done within a recipe – eg. log scaling abundance and omitting null values – I’m deliberately choosing to do them outside of the recipe for better comprehension. In particular, omitting null values now allows for <code>augment()</code> to work later on, and it’s best practice to transform outcome variables outside of a recipe.</li>
+</ul>
+<pre class="r"><code># omitting null values, acquiring year and month information, and selecting desired rows
+cfin &lt;- readr::read_csv(&quot;ecomon_data.csv.gz&quot;, col_types = readr::cols()) |&gt;
+  na.omit() |&gt;
+  mutate(month = lubridate::month(date) |&gt; as.factor(),
+         year = lubridate::year(date),
+         abundance = log10(calfin_10m2 + 1)) |&gt;
+  select(lat, lon, year, month, abundance, Bathy_depth, sfc_temp:btm_salt)
+
+cfin</code></pre>
+<pre><code>## # A tibble: 17,795 × 10
+##      lat   lon  year month abundance Bathy_depth sfc_temp sfc_salt btm_temp
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;     &lt;dbl&gt;       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1  40.6 -71.4  1977 8          5.41        64.6     19.8     32.4     9.18
+##  2  40.2 -69.4  1977 8          5.29        86.5     20.7     33.0     9.06
+##  3  40.2 -68.8  1977 8          5.62       170.      19.2     32.9    10.2 
+##  4  40.5 -68.6  1977 8          5.79        86.7     18.3     32.5     8.57
+##  5  41.1 -69.4  1977 8          4.61        42.1      9.8     32.3     8.71
+##  6  40.8 -68.8  1977 8          4.96        68.6     12.9     32.7    11.7 
+##  7  40.9 -68.6  1977 8          4.39        56.2     12.4     32.6    12.4 
+##  8  40.8 -68.3  1977 8          5.18        51.1     14.1     32.6    11.8 
+##  9  40.6 -68.3  1977 8          5.92        80.4     18.7     32.5     9.15
+## 10  41.1 -67.9  1977 8          4.70        49.1     13.2     32.6    13.1 
+## # … with 17,785 more rows, and 1 more variable: btm_salt &lt;dbl&gt;</code></pre>
+<pre class="r"><code># plotting the data
+ggplot(cfin, aes(x = lon, y = lat)) +
+  geom_polygon(data = ggplot2::map_data(&quot;world&quot;), 
+               aes(long, lat, group = group)) +
+  geom_point(aes(col = abundance), alpha = .3) +
+  coord_quickmap(xlim = c(-76, -65),
+                 ylim = c(35, 45),
+                 expand = TRUE) +
+  theme_bw()</code></pre>
+<p><img src="Tune_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+</div>
+<div id="assessing-model-performance-with-resampling" class="section level2">
+<h2>Assessing Model Performance with Resampling</h2>
+<p><em>To learn more about creating resamples, go to the <a href="RSample.html">RSample Tutorial</a>.</em></p>
+<p><code>Tune</code> contains tools to assess a model using resampling objects. To begin, lets build a simple random forest workflow for this data, along with a v-fold resampling object.</p>
+<pre class="r"><code># splitting the data
+set.seed(400)
+cfin_split &lt;- initial_split(cfin, prop = 3/4, strata = abundance)
+cfin_train &lt;- training(cfin_split)
+
+# creating a resampling object
+cfin_folds &lt;- cfin_train |&gt;
+  vfold_cv(v = 5, repeats = 1, strata = abundance)
+
+# a simple recipe
+simple_rec &lt;- recipe(abundance ~ ., data = cfin_train) |&gt;
+  update_role(lat, lon, year, new_role = &quot;ID&quot;) |&gt;
+  step_log(Bathy_depth, base = 10) |&gt;
+  step_corr(threshold = .9) |&gt;
+  step_normalize(all_numeric_predictors())
+
+# a simple model
+simple_rf &lt;- rand_forest(mode = &quot;regression&quot;, 
+                         trees = 20, 
+                         engine = &quot;ranger&quot;)
+
+simple_wkf &lt;- workflow(preprocessor = simple_rec, 
+                       spec = simple_rf)</code></pre>
+<p>Resamples are effective for assessing a model because they allow us to generate averaged estimates of performance. We can use <a href="https://tune.tidymodels.org/reference/fit_resamples.html"><code>fit_resamples()</code></a> to fit a workflow to multiple resamples at once.</p>
 <ul>
-<li>Covers Workflow sets</li>
+<li>The <code>control</code> argument of <code>fit_resamples()</code> allows you to control aspects of the resampling process. It accepts a <a href="https://tune.tidymodels.org/reference/control_grid.html"><code>control_resamples()</code></a> object as argument.</li>
+</ul>
+<pre class="r"><code># building a control object
+cfin_control &lt;- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+# fit_resamples accepts workflows, or allows you to pass in the preprocessor and model as separate arguments
+cfin_fits &lt;- fit_resamples(simple_wkf, 
+                           cfin_folds, 
+                           metrics = metric_set(rmse, rsq, mae), # metrics to evaluate
+                           control = cfin_control)
+
+cfin_fits</code></pre>
+<pre><code>## # Resampling results
+## # 5-fold cross-validation using stratification 
+## # A tibble: 5 × 5
+##   splits               id    .metrics         .notes           .predictions
+##   &lt;list&gt;               &lt;chr&gt; &lt;list&gt;           &lt;list&gt;           &lt;list&gt;      
+## 1 &lt;split [10672/2672]&gt; Fold1 &lt;tibble [3 × 4]&gt; &lt;tibble [0 × 3]&gt; &lt;tibble&gt;    
+## 2 &lt;split [10676/2668]&gt; Fold2 &lt;tibble [3 × 4]&gt; &lt;tibble [0 × 3]&gt; &lt;tibble&gt;    
+## 3 &lt;split [10676/2668]&gt; Fold3 &lt;tibble [3 × 4]&gt; &lt;tibble [0 × 3]&gt; &lt;tibble&gt;    
+## 4 &lt;split [10676/2668]&gt; Fold4 &lt;tibble [3 × 4]&gt; &lt;tibble [0 × 3]&gt; &lt;tibble&gt;    
+## 5 &lt;split [10676/2668]&gt; Fold5 &lt;tibble [3 × 4]&gt; &lt;tibble [0 × 3]&gt; &lt;tibble&gt;</code></pre>
+<p>We can extract the computed metrics using the <a href="https://tune.tidymodels.org/reference/collect_predictions.html"><code>collect_metrics()</code></a> method, which is one of several available collection methods.</p>
+<pre class="r"><code>cfin_fits |&gt;  
+  # summarize determines whether we average results or show them for each resample
+  collect_metrics(summarize = TRUE)</code></pre>
+<pre><code>## # A tibble: 3 × 6
+##   .metric .estimator  mean     n std_err .config             
+##   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+## 1 mae     standard   0.875     5 0.00492 Preprocessor1_Model1
+## 2 rmse    standard   1.22      5 0.00963 Preprocessor1_Model1
+## 3 rsq     standard   0.567     5 0.00438 Preprocessor1_Model1</code></pre>
+<p>Additionally, we can use <a href="https://tune.tidymodels.org/reference/augment.tune_results.html"><code>augment(&lt;resample results&gt;)</code></a> to bind predicted values from resamples to our original data. If multiple resamples evaluated the same point, estimates are averaged.</p>
+<pre class="r"><code>aug &lt;- augment(cfin_fits)
+
+ggplot(aug, aes(x = abundance, y = .pred)) +
+  # adjusts x and y to have same bounds
+  tune::coord_obs_pred() +
+  theme_bw() + 
+  geom_point(color = &quot;blue&quot;, alpha = .2) +
+  geom_abline() </code></pre>
+<p><img src="Tune_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><br></p>
+</div>
+<div id="tuning-hyperparameters" class="section level2">
+<h2>Tuning Hyperparameters</h2>
+<p>Although models and recipe steps estimate most of their parameters during training, some values must be specified by the user. These values are called <strong>hyperparameters</strong>, and often creating a good model hinges on choosing good hyperparameters. <code>Tune</code> contains an easy interface to experiment with different combinations of hyperparameters.</p>
+<p><strong>Note</strong>: When tuning hyperparameters, <code>Tune</code> works in conjunction with <a href="https://dials.tidymodels.org/index.html"><code>Dials</code></a>, a tidymodels package designed specifically to provide infrastructure for tuning.</p>
+<p><br></p>
+<div id="marking-hyperparameters-for-tuning" class="section level3">
+<h3>Marking hyperparameters for tuning</h3>
+<p>There are a variety of hyperparameters that we can tune:</p>
+<ul>
+<li><strong>Parameters within recipe steps</strong>, eg. <code>threshold</code> for <code>step_other()</code>.</li>
+<li><strong>Main arguments for models</strong>, eg. <code>min_n</code> for a random forest model or <code>hidden_units</code> for a neural network.</li>
+<li><strong>Engine-specific arguments</strong>, eg. <code>regularization.factor</code> for the “ranger” engine of random forest.</li>
+</ul>
+<p>To determine tunable parameters for a model or recipe, we can call <a href="https://www.rdocumentation.org/packages/tune/versions/0.1.1/topics/tunable"><code>tunable()</code></a> on that object. <code>tunable()</code> won’t pick up engine-specific arguments.</p>
+<pre class="r"><code>tunable(simple_wkf)</code></pre>
+<pre><code>## # A tibble: 4 × 5
+##   name      call_info        source     component   component_id
+##   &lt;chr&gt;     &lt;list&gt;           &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;       
+## 1 mtry      &lt;named list [2]&gt; model_spec rand_forest main        
+## 2 trees     &lt;named list [2]&gt; model_spec rand_forest main        
+## 3 min_n     &lt;named list [2]&gt; model_spec rand_forest main        
+## 4 threshold &lt;named list [2]&gt; recipe     step_corr   corr_ybIHe</code></pre>
+<p>To mark a hyperparameter for tuning, pass <code>tune()</code> to the parameter. Multiple hyperparameters can be tuned at a time.</p>
+<ul>
+<li>Passing a name argument to <code>tune()</code> will override the default identifying name for a marked parameter. This is most useful when multiple parameters of the same type are tuned.</li>
+</ul>
+<pre class="r"><code># In this example, we aren&#39;t tuning any recipe steps. 
+tune_recipe &lt;- simple_rec
+
+# Marking some parameters for tuning - note name override 
+tune_model &lt;- rand_forest(trees = tune(), mtry = tune()) |&gt;
+  set_mode(&quot;regression&quot;) |&gt;
+  set_engine(&quot;ranger&quot;, regularization.factor = tune(&quot;regfactor&quot;))
+
+# combining into a workflow
+tune_wkf &lt;- workflow(preprocessor = tune_recipe, 
+                     spec = tune_model)
+
+tune_wkf</code></pre>
+<pre><code>## ══ Workflow ════════════════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: rand_forest()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 3 Recipe Steps
+## 
+## • step_log()
+## • step_corr()
+## • step_normalize()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## Random Forest Model Specification (regression)
+## 
+## Main Arguments:
+##   mtry = tune()
+##   trees = tune()
+## 
+## Engine-Specific Arguments:
+##   regularization.factor = tune(&quot;regfactor&quot;)
+## 
+## Computational engine: ranger</code></pre>
+<p><br></p>
+</div>
+<div id="updating-parameter-limits" class="section level3">
+<h3>Updating parameter limits</h3>
+<p>Use <a href="https://workflows.tidymodels.org/reference/extract-workflow.html"><code>extract_parameter_set_dials()</code></a> and <code>extract_parameter_dials()</code> to extract information a marked parameter or parameters.</p>
+<pre class="r"><code>tune_params &lt;- extract_parameter_set_dials(tune_wkf)
+tune_params</code></pre>
+<pre><code>## Collection of 3 parameters for tuning
+## 
+##  identifier                  type    object
+##        mtry                  mtry nparam[?]
+##       trees                 trees nparam[+]
+##   regfactor regularization.factor nparam[+]
+## 
+## Model parameters needing finalization:
+##    # Randomly Selected Predictors (&#39;mtry&#39;)
+## 
+## See `?dials::finalize` or `?dials::update.parameters` for more information.</code></pre>
+<pre class="r"><code>#extracting a specific parameter by name
+extract_parameter_dials(tune_wkf, &quot;trees&quot;)</code></pre>
+<pre><code>## # Trees (quantitative)
+## Range: [1, 2000]</code></pre>
+<p>Each tunable parameter needs a range, representing the upper and lower limits of values to test while tuning. Ranges are automatically generated by <code>Dials</code> parameter objects that correspond to specific parameters. To update the testing range for a parameter, use the <a href="https://dials.tidymodels.org/reference/update.parameters.html"><code>update()</code></a> method.</p>
+<pre class="r"><code># a dials::threshold() object was created when we first marked threshold for tuning
+dials::trees()</code></pre>
+<pre><code>## # Trees (quantitative)
+## Range: [1, 2000]</code></pre>
+<pre class="r"><code># updating the threshold - we only want to test 15 to 500 trees
+tune_params &lt;- tune_params |&gt;
+  update(trees = threshold(c(15, 500)))
+
+extract_parameter_dials(tune_params, &quot;trees&quot;)</code></pre>
+<pre><code>## Threshold (quantitative)
+## Range: [15, 500]</code></pre>
+<p>Some parameters might be initialized with missing values because their range depends on the testing dataset. These variables must be updated or the tuning process will fail.</p>
+<ul>
+<li>A <a href="https://dials.tidymodels.org/reference/finalize.html"><code>finalize()</code></a> method exists that can update these parameters based on a dataset. However, this method is finicky and might fail to recognize recipe roles, so updating manually is a safer bet.</li>
+</ul>
+<pre class="r"><code>extract_parameter_dials(tune_params, &quot;mtry&quot;)</code></pre>
+<pre><code>## # Randomly Selected Predictors (quantitative)
+## Range: [1, ?]</code></pre>
+<pre class="r"><code>tune_params &lt;- tune_params |&gt; 
+  update(mtry = mtry(c(1, 6)))</code></pre>
+<p><br></p>
+</div>
+<div id="grid-search-and-tuning-the-model" class="section level3">
+<h3>Grid Search and Tuning the Model</h3>
+<p>Once parameter ranges are specified, the next step is to choose a method for finding the best combination. One way to do this is through <strong>grid search</strong>: we create pre-determined sets of parameter values, run the model with them, and select the best one.</p>
+<ul>
+<li><code>Tune</code> also supports <strong>iterative search</strong>, where the results from evaluating one set of parameter values are used to choose the next one. Iterative search is not covered here: for more information, check out check out <a href="https://www.tmwr.org/iterative-search.html">Tidy Modeling with R</a> and the <a href="https://dials.tidymodels.org/reference/index.html">Dials Reference</a>.</li>
+</ul>
+<p><code>Dials</code> contains a four methods that turn provided parameter ranges into sets of testable values: <a href="https://dials.tidymodels.org/reference/grid_regular.html"><code>grid_regular()</code></a>, <a href="https://dials.tidymodels.org/reference/grid_regular.html"><code>grid_random()</code></a>, <a href="https://dials.tidymodels.org/reference/grid_max_entropy.html"><code>grid_max_entropy()</code></a>, and <a href="https://dials.tidymodels.org/reference/grid_max_entropy.html"><code>grid_latin_hypercube()</code></a>. The simplest of these is <code>grid_regular()</code>, which regularly spans the available parameter values.</p>
+<pre class="r"><code>regular_tune &lt;- grid_regular(tune_params, levels = 4)
+# latin hypercube attempts to fill the parameter space in a semi-random way
+latin_hypercube_tune &lt;- grid_latin_hypercube(tune_params, size = 8)
+
+# note the resulting dataframe, which contains combinations of parameter values
+regular_tune</code></pre>
+<pre><code>## # A tibble: 64 × 3
+##     mtry trees regfactor
+##    &lt;int&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1     1   15          0
+##  2     2   15          0
+##  3     4   15          0
+##  4     6   15          0
+##  5     1  177.         0
+##  6     2  177.         0
+##  7     4  177.         0
+##  8     6  177.         0
+##  9     1  338.         0
+## 10     2  338.         0
+## # … with 54 more rows</code></pre>
+<p>We can plot these parameter sets to better understand how they span across the parameter space.</p>
+<pre class="r"><code># helper function to plot gridded parameter specifications
+plot_grid &lt;- function(grid_obj) {
+  ggplot(grid_obj, aes(x = .panel_x, y = .panel_y)) +
+    geom_point() +
+    geom_blank() +
+    ggforce::facet_matrix(vars(regfactor, trees, mtry), 
+                          layer.diag = 2)
+} 
+
+# points are regularly spaced across the grid
+plot_grid(regular_tune)</code></pre>
+<p><img src="Tune_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code># points are more randomly spaced
+plot_grid(latin_hypercube_tune)</code></pre>
+<p><img src="Tune_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
+<p>Finally, pass the tunable object, gridded parameter set, data, and desired metrics into the <code>tune_grid()</code> method to return a results table.</p>
+<pre class="r"><code>results &lt;- tune_grid(tune_wkf, 
+                     cfin_folds, # using resamples for best performance estimates
+                     grid = latin_hypercube_tune,
+                     metrics = metric_set(rsq, rmse, mae))
+
+results</code></pre>
+<pre><code>## # Tuning results
+## # 5-fold cross-validation using stratification 
+## # A tibble: 5 × 4
+##   splits               id    .metrics          .notes          
+##   &lt;list&gt;               &lt;chr&gt; &lt;list&gt;            &lt;list&gt;          
+## 1 &lt;split [10672/2672]&gt; Fold1 &lt;tibble [24 × 7]&gt; &lt;tibble [0 × 3]&gt;
+## 2 &lt;split [10676/2668]&gt; Fold2 &lt;tibble [24 × 7]&gt; &lt;tibble [0 × 3]&gt;
+## 3 &lt;split [10676/2668]&gt; Fold3 &lt;tibble [24 × 7]&gt; &lt;tibble [0 × 3]&gt;
+## 4 &lt;split [10676/2668]&gt; Fold4 &lt;tibble [24 × 7]&gt; &lt;tibble [0 × 3]&gt;
+## 5 &lt;split [10676/2668]&gt; Fold5 &lt;tibble [24 × 7]&gt; &lt;tibble [0 × 3]&gt;</code></pre>
+<p><br></p>
+</div>
+<div id="analysing-results-and-finalizing-the-model" class="section level3">
+<h3>Analysing Results and Finalizing the Model</h3>
+<p><code>Tune</code> contains several ways to examine tuning results. The simplest, <a href="https://tune.tidymodels.org/reference/show_best.html"><code>show_best()</code></a>, will rank all the tuning results by a desired metric.</p>
+<pre class="r"><code>results |&gt; show_best(metric = &quot;rmse&quot;)</code></pre>
+<pre><code>## # A tibble: 5 × 9
+##    mtry trees regfactor .metric .estimator  mean     n std_err .config          
+##   &lt;int&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;            
+## 1     1 305.      0.240 rmse    standard    1.19     5 0.00993 Preprocessor1_Mo…
+## 2     2 463.      0.782 rmse    standard    1.20     5 0.0104  Preprocessor1_Mo…
+## 3     3 221.      0.427 rmse    standard    1.21     5 0.00970 Preprocessor1_Mo…
+## 4     3  82.2     0.122 rmse    standard    1.21     5 0.0104  Preprocessor1_Mo…
+## 5     4 421.      0.338 rmse    standard    1.21     5 0.00980 Preprocessor1_Mo…</code></pre>
+<p><code>Tune</code> also has an <a href="https://tune.tidymodels.org/reference/autoplot.tune_results.html"><code>autoplot()</code></a> method that helps visualize how parameters affect performance.</p>
+<pre class="r"><code>autoplot(results)</code></pre>
+<p><img src="Tune_files/figure-html/autoplot-1.png" width="672" /></p>
+<p>After examining results, we can update the model’s parameters either by passing them in manually or by using the <a href="https://tune.tidymodels.org/reference/finalize_model.html"><code>finalize_workflow()</code></a> method.</p>
+<pre class="r"><code># using select_best to extract the best hyperparameter combination
+lowest_rmse &lt;- select_best(results, metric = &quot;rmse&quot;)
+
+# updating the workflow 
+tuned_wkf &lt;- finalize_workflow(tune_wkf, lowest_rmse)
+
+tune_wkf</code></pre>
+<pre><code>## ══ Workflow ════════════════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: rand_forest()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 3 Recipe Steps
+## 
+## • step_log()
+## • step_corr()
+## • step_normalize()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## Random Forest Model Specification (regression)
+## 
+## Main Arguments:
+##   mtry = tune()
+##   trees = tune()
+## 
+## Engine-Specific Arguments:
+##   regularization.factor = tune(&quot;regfactor&quot;)
+## 
+## Computational engine: ranger</code></pre>
+<p>Finally, we can run the finalized model on the entire training set and collect metrics. <a href="https://tune.tidymodels.org/reference/last_fit.html"><code>last_fit()</code></a> compresses the testing/training process into a single method call.</p>
+<pre class="r"><code># using last fit to collect results
+final_results &lt;- last_fit(tuned_wkf, 
+                         cfin_split) # initial_split object
+
+final_results</code></pre>
+<pre><code>## # Resampling results
+## # Manual resampling 
+## # A tibble: 1 × 6
+##   splits               id              .metrics .notes   .predictions .workflow 
+##   &lt;list&gt;               &lt;chr&gt;           &lt;list&gt;   &lt;list&gt;   &lt;list&gt;       &lt;list&gt;    
+## 1 &lt;split [13344/4451]&gt; train/test spl… &lt;tibble&gt; &lt;tibble&gt; &lt;tibble&gt;     &lt;workflow&gt;</code></pre>
+<pre class="r"><code>collect_metrics(final_results) # final metrics for model</code></pre>
+<pre><code>## # A tibble: 2 × 4
+##   .metric .estimator .estimate .config             
+##   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               
+## 1 rmse    standard       1.17  Preprocessor1_Model1
+## 2 rsq     standard       0.593 Preprocessor1_Model1</code></pre>
+<pre class="r"><code># plotting finalized model results using augment()
+augment(final_results) |&gt;
+  ggplot(aes(x = abundance, y = .pred)) +
+  tune::coord_obs_pred() +
+  theme_bw() + 
+  geom_point(color = &quot;blue&quot;, alpha = .2) +
+  geom_abline()</code></pre>
+<p><img src="Tune_files/figure-html/lastfit-1.png" width="672" /></p>
+<p><br></p>
+</div>
+</div>
+<div id="further-resources" class="section level2">
+<h2>Further Resources</h2>
+<ul>
+<li><a href="https://www.tmwr.org/tuning.html" class="uri">https://www.tmwr.org/tuning.html</a>
+<ul>
+<li>Covers strategies for effectively tuning models. Chapters 12 and 13 go into into significantly more depth about Grid and Iterative search than what I’ve mentioned here.</li>
+</ul></li>
+<li><a href="https://juliasilge.com/blog/xgboost-tune-volleyball/" class="uri">https://juliasilge.com/blog/xgboost-tune-volleyball/</a>
+<ul>
+<li>An example of tuning a boosted regression tree using tidymodels.</li>
 </ul></li>
 </ul>
 </div>

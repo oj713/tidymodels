@@ -264,10 +264,10 @@ $(document).ready(function () {
   <a href="Workflows.html">Workflows</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">WorkflowSets</a>
+  <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="Tune.html">Tune</a>
+  <a href="WorkflowSets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -323,18 +323,18 @@ data_train &lt;- training(data_split)
 
 head(data_test)</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 3           4.7         3.2          1.3         0.2  setosa   3
-## 4           4.6         3.1          1.5         0.2  setosa   4
-## 5           5.0         3.6          1.4         0.2  setosa   5
+## 1           5.1         3.5          1.4         0.2  setosa   1
 ## 8           5.0         3.4          1.5         0.2  setosa   8
-## 11          5.4         3.7          1.5         0.2  setosa  11
-## 16          5.7         4.4          1.5         0.4  setosa  16</code></pre>
+## 9           4.4         2.9          1.4         0.2  setosa   9
+## 15          5.8         4.0          1.2         0.2  setosa  15
+## 24          5.1         3.3          1.7         0.5  setosa  24
+## 25          4.8         3.4          1.9         0.2  setosa  25</code></pre>
 <p><br></p>
 </div>
 <div id="resampling" class="section level2">
 <h2>Resampling</h2>
 <p><em>If you are building your first model, skip this section!</em></p>
-<p>When building a model, we usually want to estimate the performance of the model <strong>before</strong> we evaluate it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set.</p>
+<p>When building a model, we usually want to estimate the performance of the model <strong>before</strong> we evaluate it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. Learn to work with resamples in the <a href="Tune.html">Tune</a> and <a href="WorkflowSets.html">Workflowsets</a> tutorials.</p>
 <p><br></p>
 <div id="validation-set" class="section level3">
 <h3>Validation Set</h3>
@@ -360,12 +360,12 @@ v_split &lt;- validate[[1]][[1]]
 # pulling analysis set 
 analysis(v_split) |&gt; head()</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 23          4.6         3.6          1.0         0.2  setosa  23
-## 28          5.2         3.5          1.5         0.2  setosa  28
-## 40          5.1         3.4          1.5         0.2  setosa  40
-## 7           4.6         3.4          1.4         0.3  setosa   7
-## 45          5.1         3.8          1.9         0.4  setosa  45
-## 26          5.0         3.0          1.6         0.2  setosa  26</code></pre>
+## 3           4.7         3.2          1.3         0.2  setosa   3
+## 48          4.6         3.2          1.4         0.2  setosa  48
+## 21          5.4         3.4          1.7         0.2  setosa  21
+## 6           5.4         3.9          1.7         0.4  setosa   6
+## 11          5.4         3.7          1.5         0.2  setosa  11
+## 45          5.1         3.8          1.9         0.4  setosa  45</code></pre>
 <p><br></p>
 </div>
 <div id="v-fold-cross-validation" class="section level3">

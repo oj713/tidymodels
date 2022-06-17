@@ -9,15 +9,9 @@ knitr::opts_chunk$set(echo = TRUE)
 source("setup.R")
 ```
 
-Models usually work poorly before they work well. [`WorkflowSets`](https://tune.tidymodels.org/) contains tools to compare workflows and tune hyperparameters. 
+Models usually work poorly before they work well. [`WorkflowSets`](https://tune.tidymodels.org/) contains tools to estimate performance and optimize models.  
 
-**Note:** `Tune` is a complex package and I don't understand significant chunks 
+## Further Resources ##
 
-<br>
-
-#W
-
-### Further Resources ###
-
-* https://www.tmwr.org/compare.html
-  * Covers Workflow sets 
+* https://www.tmwr.org/tuning.html
+  * A much more detailed walkthrough of tuning the model. 

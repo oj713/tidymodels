@@ -120,7 +120,7 @@ A complete list of extractors for workflows can be found [here](https://workflow
 # extracting the (unprepped) preprocessor
 extract_preprocessor(iris_wkf)
 
-#extracting the fitted model
+#extracting the fitted parsnip model
 extract_fit_parsnip(iris_wkf)
 ```
 
@@ -129,4 +129,4 @@ extract_fit_parsnip(iris_wkf)
 ## Further Resources ##
 
 * https://www.tmwr.org/workflows.html
-  * Both an introduction of and deep dive into workflows that covers more capabilities than what I have here, including workflow sets. 
+  * Anoter example of creating and using a workflow that also touches on their theoretical reasoning. 

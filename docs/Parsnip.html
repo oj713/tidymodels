@@ -264,10 +264,10 @@ $(document).ready(function () {
   <a href="Workflows.html">Workflows</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">WorkflowSets</a>
+  <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="Tune.html">Tune</a>
+  <a href="WorkflowSets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -406,9 +406,9 @@ rf_fit </code></pre>
 ##         OOB estimate of  error rate: 0%
 ## Confusion matrix:
 ##            setosa versicolor virginica class.error
-## setosa         44          0         0           0
+## setosa         37          0         0           0
 ## versicolor      0         36         0           0
-## virginica       0          0        32           0</code></pre>
+## virginica       0          0        39           0</code></pre>
 <p><strong>Note:</strong> If a model uses a specialized formula that specifies model structure as well as terms (eg. GAMs), pass it to <code>fit()</code>.</p>
 <p><strong>Note:</strong> If the recipe used to preprocess data modified any roles from your original formula, be sure to extract your model formula from the recipe object to account for those changes.</p>
 <p><br></p>
@@ -438,12 +438,12 @@ predict(rf_fit, prepped_testing, type = &quot;prob&quot;) |&gt;
 <pre><code>## # A tibble: 6 × 3
 ##   .pred_setosa .pred_versicolor .pred_virginica
 ##          &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
-## 1        0.998            0.002               0
-## 2        0.998            0.002               0
-## 3        0.998            0.002               0
-## 4        1                0                   0
-## 5        1                0                   0
-## 6        1                0                   0</code></pre>
+## 1         1               0               0    
+## 2         1               0               0    
+## 3         0.95            0.048           0.002
+## 4         1               0               0    
+## 5         1               0               0    
+## 6         1               0               0</code></pre>
 <pre class="r"><code># augment binds predictions to original data
 # augment does not have a type argument
 iris_preds &lt;- augment(rf_fit, prepped_testing) 
@@ -452,12 +452,12 @@ head(iris_preds)</code></pre>
 <pre><code>## # A tibble: 6 × 9
 ##   Sepal.Length Sepal.Width Petal.Width   Row Species .pred_class .pred_setosa .pred_versicolor .pred_virginica
 ##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
-## 1        -1.10     -0.246        -1.17     2 setosa  setosa             0.998            0.002               0
-## 2        -1.73     -0.462        -1.17     9 setosa  setosa             0.998            0.002               0
-## 3        -1.23     -0.246        -1.30    13 setosa  setosa             0.998            0.002               0
-## 4        -1.23     -0.0308       -1.17    31 setosa  setosa             1                0                   0
-## 5        -1.73     -0.246        -1.17    39 setosa  setosa             1                0                   0
-## 6        -1.48      0.185        -1.17    48 setosa  setosa             1                0                   0</code></pre>
+## 1       -1.49        0.343       -1.30     3 setosa  setosa              1               0               0    
+## 2       -1.99       -0.128       -1.43    14 setosa  setosa              1               0               0    
+## 3       -0.117       2.23        -1.30    15 setosa  setosa              0.95            0.048           0.002
+## 4       -0.617       1.99        -1.05    17 setosa  setosa              1               0               0    
+## 5       -0.992       1.52        -1.05    22 setosa  setosa              1               0               0    
+## 6       -1.62        1.29        -1.30    23 setosa  setosa              1               0               0</code></pre>
 <p>Methods to fit resampling sets are covered in the <a href="%22Tune.html%22">Tune Tutorial</a>.</p>
 <p><br></p>
 </div>

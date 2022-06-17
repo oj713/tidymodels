@@ -54,12 +54,14 @@ Using this example dataset, we will predict `Species` based on the other variabl
 * https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/ 
   * A simple walkthrough of some core Tidymodels packages and concepts. 
 * https://www.tmwr.org/
-  * A highly detailed guidebook of Tidymodels and how to create accurate models. 
+  * A highly detailed guidebook of Tidymodels and how to create accurate models. Much of this tutorial site is just a simplifed rehash of information from this guidebook -- if you want to take a deep dive into tuning and optimizing your model, I highly recommend going through this resource. 
   
 <br>
   
 ### About ###
 
-This site is authored by Omi Johnson and is meant to serve as an introductory walkthrough of Tidymodels. This site was built using RMarkdown and GitHub hosting -- find a simple walkthrough of how to build your own RMarkdown site [here](https://psyteachr.github.io/hack-your-data/rmarkdown_2.html). The source repository for this site is on [my GitHub](https://github.com/oj713/tidymodels).
+This site is authored by Omi Johnson and is meant to serve as an introductory walkthrough of Tidymodels. This site was built using RMarkdown and GitHub hosting -- find a simple walkthrough of how to build your own RMarkdown site [here](https://psyteachr.github.io/hack-your-data/rmarkdown_2.html). The source repository for this site is on my [GitHub](https://github.com/oj713/tidymodels).
+
+Questions? Contact me by email at **ojohnson@bigelow.org**
 
 **NOTE**: This is not a comprehensive guide. These notes are incomplete and only mention methods/techniques that the author is familiar with. Descriptions of packages and methods most likely do not include all possible arguments or applications. For a complete list of each package's methods and capabilities, please look at the official documentation. 
