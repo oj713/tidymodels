@@ -4,10 +4,24 @@ output: html_document
 ---
 
 ```{r, echo = FALSE, message = FALSE}
-source("setup.R")
+library(tidymodels)
 ```
 
 When building a model, the source dataset needs to be split in some way so that we can reserve data to both build the model and assess its performance. [RSample](https://rsample.tidymodels.org/) contains tools for dataset splitting and resampling. 
+
+<br>
+
+## The Iris Dataset ##
+
+`data_iris` is a modified version of the inbuilt `iris` dataset that includes row number as a variable. 
+```{r}
+data_iris <- bind_cols(all_of(iris), 
+                       row = 1:nrow(iris))
+
+head(data_iris)
+```
+
+Using this example dataset, we will build a model that can predict `Species` based on provided measurements (`row` is an identification variable and not used as a predictor). 
 
 <br>
 
@@ -41,13 +55,13 @@ head(data_test)
 
 *If you are building your first model, skip this section!*
 
-When building a model, we usually want to estimate the performance of the model **before** we evaluate it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. Learn to work with resamples in the [Tune](Tune.html) and [Workflowsets](WorkflowSets.html) tutorials. 
+When building a model, we usually want to estimate the performance of the model **before** evaluating it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. Learn to work with resamples in the [Tune](Tune.html) and [Workflowsets](WorkflowSets.html) tutorials. 
 
 <br>
 
 ### Validation Set ###
 
-A validation set is a single analysis/assessment split performed on the training data. It's best for large datasets, where we might not need multiple resamples to understand performance. 
+A validation set is a single analysis/assessment split performed on the training data. Validation sets are best for large datasets because multiple resamples are not needed to understand performance. 
 
 Use [`validation_split()`](https://rsample.tidymodels.org/reference/validation_split.html) and `validation_time_split()` to create a validation split or time-based validation split, respectively.
 
@@ -58,7 +72,8 @@ validate <- validation_split(data_train,
 
 validate
 ```
-We can retrieve data from a specific split object using `analysis()` and `assessment()`.
+
+Retrieve data from a specific split object using `analysis()` and `assessment()`.
 
 * **Note:** although `analysis()` and `assessment()` support additional arguments, when simply passed an `rsplit` object they act identically to `training()` and `testing()`. The names are different to distinguish resampling from the original train/test split.  
 

@@ -1,0 +1,120 @@
+---
+title: "Cfin"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This page contains the abbreviated code for the *C. Finmarchicus* modeling examples. For a detailed walkthrough, look at the [`Tune`](Tune.html) and [`Workflowsets`](Workflowsets.html) tutorials. The **ecomon_data.csv.gz** datafile is available for download on [my GitHub](https://github.com/oj713/tidymodels). 
+
+<br>
+
+```{r, message = FALSE}
+library(tidymodels)
+
+# Defining cfin dataset
+cfin <- readr::read_csv("ecomon_data.csv.gz", col_types = readr::cols()) |>
+  na.omit() |>
+  mutate(month = lubridate::month(date) |> as.factor(),
+         year = lubridate::year(date),
+         abundance = log10(calfin_10m2 + 1)) |>
+  select(lat, lon, year, month, abundance, Bathy_depth, sfc_temp:btm_salt)
+
+# Splitting the data
+set.seed(400)
+cfin_split <- initial_split(cfin, prop = 3/4, strata = abundance)
+cfin_train <- training(cfin_split)
+
+cfin_folds <- cfin_train |>
+  vfold_cv(v = 5, repeats = 1, strata = abundance)
+```
+
+<br>
+
+## Tune ##
+
+```{r tune}
+# Initializing tunable workflow
+tune_recipe <- recipe(abundance ~ ., data = cfin_train) |>
+  update_role(lat, lon, year, new_role = "ID") |>
+  step_log(Bathy_depth, base = 10) |>
+  step_corr(threshold = .9) |>
+  step_normalize(all_numeric_predictors())
+
+tune_model <- rand_forest(trees = tune(), mtry = tune()) |>
+  set_mode("regression") |>
+  set_engine("ranger", regularization.factor = tune("regfactor"))
+
+tune_wkf <- workflow(preprocessor = tune_recipe, 
+                     spec = tune_model)
+
+# Grid tuning object
+latin_hypercube_tune <- tune_wkf |>
+  extract_parameter_set_dials() |>
+  update(trees = threshold(c(15, 500)),
+         mtry = mtry(c(1, 6))) |>
+  grid_latin_hypercube(size = 6)
+
+# Performing tuning
+results <- tune_grid(tune_wkf, 
+                     cfin_folds, 
+                     grid = latin_hypercube_tune,
+                     metrics = metric_set(rsq, rmse, mae))
+
+autoplot(results)
+
+# Finalizing workflow
+tuned_wkf <- finalize_workflow(tune_wkf, 
+                               select_best(results, metric = "rmse"))
+
+# Final predictions 
+final_results <- last_fit(tuned_wkf, cfin_split)
+
+augment(final_results)
+```
+
+<br>
+
+## Workflowsets ##
+
+```{r workflowsets}
+# Initializing component recipes and models
+basic_rec <- recipe(abundance ~ ., data = cfin_train) |>
+  update_role(lat, lon, year, new_role = "ID") |>
+  step_corr(threshold = .9) |>
+  step_dummy(all_nominal_predictors())
+log_bathy <- basic_rec |>
+  step_log(Bathy_depth, base = 10)
+normalize <- log_bathy |>
+  step_normalize(all_numeric_predictors())
+
+rf <- rand_forest(mode = "regression", 
+                  engine = "ranger", 
+                  trees = 100)
+brt <- boost_tree(mode = "regression", 
+                  engine = "xgboost",
+                  trees = 15)
+
+# Initializing Workflow set
+cfin_wkfs <- workflow_set(preproc = list(basic = basic_rec, 
+                                         log = log_bathy, 
+                                         norm = normalize), 
+                          models = list(rf = rf, 
+                                        brt = brt),
+                          cross = TRUE)
+
+# Executing operation across workflows
+fitted_wkfs <- cfin_wkfs |>
+  workflow_map(fn = "fit_resamples",
+               verbose = FALSE, 
+               seed = 400, 
+               resamples = cfin_folds, 
+               metrics =  metric_set(rmse, rsq, mae),
+               control = control_resamples(save_pred = TRUE, save_workflow = TRUE))
+
+# Collecting Results
+fitted_wkfs |>
+  rank_results(rank_metric = "rmse", select_best = FALSE)
+```

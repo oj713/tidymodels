@@ -58,6 +58,7 @@ if (window.hljs) {
 
 
 
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 
 
 
@@ -267,12 +268,15 @@ $(document).ready(function () {
   <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">Workflowsets</a>
+  <a href="Workflowsets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="Iris.html">Ex. Iris</a>
+  <a href="Iris.html">Iris</a>
+</li>
+<li>
+  <a href="Cfin.html">Cfin</a>
 </li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -302,7 +306,7 @@ $(document).ready(function () {
 <div id="recipe-initiation" class="section level3">
 <h3>Recipe Initiation</h3>
 <p>Recipe objects are built by creating a “blank” recipe object and then adding on data transformations via functions.</p>
-<p>To initiate a recipe object, we can pass a formula and template dataset to the <a href="https://recipes.tidymodels.org/reference/recipe.html"><code>recipe()</code></a> function. For this example, we start with the <code>data_split</code> testing/training split we defined in the <a href="RSample.html">RSample Tutorial</a>.</p>
+<p>To initiate a recipe object, pass a formula and template dataset to the <a href="https://recipes.tidymodels.org/reference/recipe.html"><code>recipe()</code></a> function. For this example, we start with the <code>data_split</code> testing/training split defined in the <a href="RSample.html">RSample Tutorial</a>.</p>
 <pre class="r"><code># Note that I could also use data_iris, head(data_iris), data_split, etc. as the template; what matters 
 #   is that the names and types of the variables stay the same. For larger datasets, using head() 
 #   is preferable. The exception to this rule is if you include transformations that require 
@@ -312,7 +316,7 @@ template_data &lt;- training(data_split)
 iris_recipe &lt;- recipe(Species ~ ., 
                       data = template_data)</code></pre>
 <p><strong>Note:</strong> If you are building a recipe for a model with a specialized formula (eg. GAMs, which include smoothing functions), do not use it here. The formula should only represent outcomes and predictors, not any special operations/transformations (these will be incorporated within <code>Parsnip</code>).</p>
-<p>Alternatively, we can define a recipe object by passing in a template dataset, a list of all variables to be included in a model, and a list of <em>roles</em> corresponding to variables (more on this below!). This is preferable for datasets with a high number of variables.</p>
+<p>Recipe objects can also be defined by using a lists of contributing variables and their <em>roles</em> (more on this below!). This is preferable for datasets with a high number of variables.</p>
 <pre class="r"><code>iris_recipe2 &lt;- recipe (template_data, 
                         vars = c(&quot;Sepal.Length&quot;, &quot;Sepal.Width&quot;, 
                                  &quot;Petal.Length&quot;, &quot;Petal.Width&quot;, &quot;Species&quot;, &quot;row&quot;),
@@ -322,8 +326,8 @@ iris_recipe &lt;- recipe(Species ~ .,
 </div>
 <div id="roles" class="section level3">
 <h3>Roles</h3>
-<p>When we create a recipe, each variable is assigned a <em>role</em>, either explicitly by the user or inferred from a formula. A variable can have any role, including outcome, predictor, ID, case weight, stratification variable, etc. The role of a variable determines its treatment by a recipe.</p>
-<p>Usually, we only need outcome and predictor roles, which can be assigned automatically via a formula. We can view the roles assigned to variables by a recipe with <a href="https://recipes.tidymodels.org/reference/summary.recipe.html"><code>summary()</code></a>.</p>
+<p>When creating a recipe, each variable is assigned a <em>role</em>, either explicitly by the user or inferred from a formula. A variable can have any role, including outcome, predictor, ID, case weight, stratification variable, etc. The role of a variable determines its treatment by a recipe.</p>
+<p>Most models only need outcome and predictor, which can be assigned automatically via a formula. View the roles assigned to variables by a recipe with <a href="https://recipes.tidymodels.org/reference/summary.recipe.html"><code>summary()</code></a>.</p>
 <pre class="r"><code>iris_recipe |&gt; summary()</code></pre>
 <pre><code>## # A tibble: 6 × 4
 ##   variable     type    role      source  
@@ -351,13 +355,13 @@ recipe(Species + Sepal.Length ~ ., data = template_data) |&gt; summary()</code><
 ## 4 row          numeric predictor original
 ## 5 Species      nominal outcome   original
 ## 6 Sepal.Length numeric outcome   original</code></pre>
-<p>Once we’ve initiated a recipe, we can change the role for a variable using the <a href="https://recipes.tidymodels.org/reference/roles.html"><code>update_role()</code></a> function. In the case of <code>data_iris</code>, we would want to make <code>row</code> an ID variable so that it won’t be transformed as a predictor but will stay attached to the data for later processing.</p>
+<p>After initializing a recipe, update roles for variables using the <a href="https://recipes.tidymodels.org/reference/roles.html"><code>update_role()</code></a> function. In the case of <code>data_iris</code>, we want to make <code>row</code> an ID variable so that it won’t be transformed as a predictor but still stay attached to the data for later processing.</p>
 <ul>
 <li>Note that <code>update_role()</code> is overriding the original formula / variable specifications passed to the recipe.</li>
 </ul>
 <pre class="r"><code># updating &#39;row&#39; to an ID variable
 iris_recipe &lt;- iris_recipe |&gt;
-  # note that we could pass multiple variable names in to change multiple roles at once 
+  # update_role can update multiple variables at a time
   update_role(row, new_role = &quot;ID&quot;) 
 
 # viewing the updated role
@@ -387,7 +391,7 @@ summary(iris_recipe)</code></pre>
 </div>
 <div id="step-functions" class="section level3">
 <h3>Step Functions</h3>
-<p>Step functions are used to specify the data transformations that we would like to include in a recipe. Each step function represents a unique data transformation and returns a recipe object with the transformation added.</p>
+<p>Step functions are used to specify the data transformations to include in a recipe. Each step function represents a unique data transformation and returns a recipe object with the transformation added.</p>
 <p>Step functions take the following arguments:</p>
 <ul>
 <li><strong>A recipe object</strong></li>
@@ -441,7 +445,7 @@ iris_recipe</code></pre>
 <h3>Prepping the Recipe and Baking New Data</h3>
 <p>Once we’ve added all the desired roles and steps to a recipe, use the <a href="https://recipes.tidymodels.org/reference/prep.html"><code>prep()</code></a> function to “train” the recipe on the template data – that is, use the template data to estimate the parameters/quantities required by steps.</p>
 <ul>
-<li>If we added or changed any roles from the original recipe creation, we can view that now. Use <a href="https://recipes.tidymodels.org/reference/formula.recipe.html"><code>formula()</code></a> to pull an updated formula from a prepped recipe object.</li>
+<li>If any roles were added or changed within steps, it’s visible now. Use <a href="https://recipes.tidymodels.org/reference/formula.recipe.html"><code>formula()</code></a> to pull an updated formula from a prepped recipe object.</li>
 </ul>
 <pre class="r"><code># preparing the recipe using prep() 
 iris_recipe_prepped &lt;- iris_recipe |&gt;
@@ -468,8 +472,8 @@ iris_recipe_prepped</code></pre>
 <pre class="r"><code># We changed the role of Row in our recipe. See that in the updated formula
 formula(iris_recipe_prepped)</code></pre>
 <pre><code>## Species ~ Sepal.Length + Sepal.Width + Petal.Width
-## &lt;environment: 0x116634158&gt;</code></pre>
-<p>Finally, we can use the prepped recipe to process data. use <a href="https://recipes.tidymodels.org/reference/bake.html"><code>bake()</code></a> to process data.</p>
+## &lt;environment: 0x11b163a50&gt;</code></pre>
+<p>Finally, use the prepped recipe to process data. <a href="https://recipes.tidymodels.org/reference/bake.html"><code>bake()</code></a> will apply the transformations in a recipe object to a dataset, prepping it for modelling.</p>
 <p><strong>Note</strong>: <code>prep()</code> <strong>must</strong> be called before using a recipe to bake data - otherwise, the steps are not trained and the code will error.</p>
 <pre class="r"><code># To extract the baked template data, pass in NULL as the new_data argument
 prepped_training &lt;- bake(iris_recipe_prepped, 
@@ -478,21 +482,21 @@ head(prepped_training)</code></pre>
 <pre><code>## # A tibble: 6 × 5
 ##   Sepal.Length Sepal.Width Petal.Width   Row Species   
 ##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;     
-## 1      0.602        0.597        0.572    57 versicolor
-## 2      0.114       -0.0716       0.439    62 versicolor
-## 3      1.09         0.597        1.77    145 virginica 
-## 4     -0.373       -1.19         0.172    90 versicolor
-## 5     -0.00762     -0.517        1.64    115 virginica 
-## 6     -1.23         0.151       -1.29     31 setosa</code></pre>
+## 1        0.276      -0.996       0.236   135 virginica 
+## 2        1.24        0.193       1.46    142 virginica 
+## 3        1.60        0.431       0.779   126 virginica 
+## 4       -0.207       1.86       -1.26     19 setosa    
+## 5        1.24        0.431       1.46    121 virginica 
+## 6       -0.207      -0.996      -0.307    80 versicolor</code></pre>
 <pre class="r"><code># taking a glimpse at the original unprocessed testing set
 head(testing(data_split))</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 4           4.6         3.1          1.5         0.2  setosa   4
-## 6           5.4         3.9          1.7         0.4  setosa   6
-## 7           4.6         3.4          1.4         0.3  setosa   7
-## 12          4.8         3.4          1.6         0.2  setosa  12
-## 14          4.3         3.0          1.1         0.1  setosa  14
-## 15          5.8         4.0          1.2         0.2  setosa  15</code></pre>
+## 1           5.1         3.5          1.4         0.2  setosa   1
+## 5           5.0         3.6          1.4         0.2  setosa   5
+## 8           5.0         3.4          1.5         0.2  setosa   8
+## 11          5.4         3.7          1.5         0.2  setosa  11
+## 20          5.1         3.8          1.5         0.3  setosa  20
+## 23          4.6         3.6          1.0         0.2  setosa  23</code></pre>
 <pre class="r"><code># processing a new dataset by passing it as the new_data argument
 prepped_testing &lt;- bake(iris_recipe_prepped, 
                         new_data = testing(data_split))
@@ -502,12 +506,12 @@ head(prepped_testing)</code></pre>
 <pre><code>## # A tibble: 6 × 5
 ##   Sepal.Length Sepal.Width Petal.Width   Row Species
 ##          &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;  
-## 1     -1.47         0.151        -1.29     4 setosa 
-## 2     -0.495        1.93         -1.03     6 setosa 
-## 3     -1.47         0.820        -1.16     7 setosa 
-## 4     -1.23         0.820        -1.29    12 setosa 
-## 5     -1.84        -0.0716       -1.43    14 setosa 
-## 6     -0.00762      2.16         -1.29    15 setosa</code></pre>
+## 1       -0.930       1.14        -1.39     1 setosa 
+## 2       -1.05        1.38        -1.39     5 setosa 
+## 3       -1.05        0.907       -1.39     8 setosa 
+## 4       -0.568       1.62        -1.39    11 setosa 
+## 5       -0.930       1.86        -1.26    20 setosa 
+## 6       -1.53        1.38        -1.39    23 setosa</code></pre>
 <p><br></p>
 </div>
 <div id="further-resources" class="section level3">

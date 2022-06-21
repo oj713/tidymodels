@@ -6,18 +6,18 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-source("setup.R")
+library(tidymodels)
 ```
 
-Models usually work poorly before they work well. [`Tune`](https://tune.tidymodels.org/) contains tools to assess model perfomance across resamples and tune model hyperparameters.
+Models usually work poorly before they work well. [`Tune`](https://tune.tidymodels.org/) contains tools to assess model performance across resamples and tune model hyperparameters.
 
 <br>
 
-## A New Dataset ##
+## The Cfin Dataset ##
 
 For this example, we're going to model abundance of *C. Finmarchicus*, a small copepod that is abundant in the North Atlantic. This dataset is sourced from the [Ecomon Survey](https://www.st.nmfs.noaa.gov/copepod/data/us-05101/index.html) and is also available to download on [my GitHub](https://github.com/oj713/tidymodels).
 
-* Although some of these steps could be done within a recipe -- eg. log scaling abundance and omitting null values -- I'm deliberately choosing to do them outside of the recipe for better comprehension. In particular, omitting null values now allows for `augment()` to work later on, and it's best practice to transform outcome variables outside of a recipe. 
+* Although some of these steps could be done within a recipe -- eg. log scaling abundance and omitting null values -- I'm deliberately choosing to do them outside of the recipe for better comprehension. In particular, omitting null values allows for `augment()` to work later on, and it's best practice to transform outcome variables outside of a recipe. 
 
 ```{r}
 # omitting null values, acquiring year and month information, and selecting desired rows
@@ -69,19 +69,20 @@ simple_rf <- rand_forest(mode = "regression",
                          trees = 20, 
                          engine = "ranger")
 
+# a simple workflow
 simple_wkf <- workflow(preprocessor = simple_rec, 
                        spec = simple_rf)
 ```
 
 Resamples are effective for assessing a model because they allow us to generate averaged estimates of performance. We can use [`fit_resamples()`](https://tune.tidymodels.org/reference/fit_resamples.html) to fit a workflow to multiple resamples at once. 
 
-* The `control` argument of `fit_resamples()` allows you to control aspects of the resampling process. It accepts a [`control_resamples()`](https://tune.tidymodels.org/reference/control_grid.html) object as argument. 
+* The `control` argument of `fit_resamples()` allows you to control aspects of the resampling process. It accepts a [`control_resamples()`](https://tune.tidymodels.org/reference/control_grid.html) object. 
 
 ```{r fitresamples}
 # building a control object
 cfin_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
 
-# fit_resamples accepts workflows, or allows you to pass in the preprocessor and model as separate arguments
+# fit_resamples works with both a workflow or separate preprocessor / model objects
 cfin_fits <- fit_resamples(simple_wkf, 
                            cfin_folds, 
                            metrics = metric_set(rmse, rsq, mae), # metrics to evaluate
@@ -90,32 +91,33 @@ cfin_fits <- fit_resamples(simple_wkf,
 cfin_fits
 ```
 
-We can extract the computed metrics using the [`collect_metrics()`](https://tune.tidymodels.org/reference/collect_predictions.html) method, which is one of several available collection methods. 
+Extract the computed metrics with the [`collect_metrics()`](https://tune.tidymodels.org/reference/collect_predictions.html) method -- one of several available collection methods. 
 
 ```{r collectmetrics}
 cfin_fits |>  
-  # summarize determines whether we average results or show them for each resample
+  # summarize determines whether results are averaged or shown for each resample
   collect_metrics(summarize = TRUE)
 ```
 
-Additionally, we can use [`augment(<resample results>)`](https://tune.tidymodels.org/reference/augment.tune_results.html) to bind predicted values from resamples to our original data. If multiple resamples evaluated the same point, estimates are averaged. 
+Use [`augment(<resample results>)`](https://tune.tidymodels.org/reference/augment.tune_results.html) to bind predicted values from resamples to the original data. If multiple resamples evaluated the same point, estimates are averaged. 
 
 ```{r}
 aug <- augment(cfin_fits)
 
+# plotting predictions vs. actual abundance
 ggplot(aug, aes(x = abundance, y = .pred)) +
   # adjusts x and y to have same bounds
   tune::coord_obs_pred() +
   theme_bw() + 
   geom_point(color = "blue", alpha = .2) +
-  geom_abline() 
+  geom_abline()
 ```
 
 <br>
 
 ## Tuning Hyperparameters ##
 
-Although models and recipe steps estimate most of their parameters during training, some values must be specified by the user. These values are called **hyperparameters**, and often creating a good model hinges on choosing good hyperparameters. `Tune` contains an easy interface to experiment with different combinations of hyperparameters. 
+Although models and recipe steps estimate most of their parameters during training, some values must be specified by the user. These values are called **hyperparameters**, and a good model often hinges on good hyperparameters. `Tune` has an easy interface to optimize hyperparameters. 
 
 **Note**: When tuning hyperparameters, `Tune` works in conjunction with  [`Dials`](https://dials.tidymodels.org/index.html), a tidymodels package designed specifically to provide infrastructure for tuning.  
 
@@ -123,13 +125,13 @@ Although models and recipe steps estimate most of their parameters during traini
 
 ### Marking hyperparameters for tuning ###
 
-There are a variety of hyperparameters that we can tune:
+There are a variety of hyperparameters that are tunable:
 
 * **Parameters within recipe steps**, eg. `threshold` for `step_other()`. 
 * **Main arguments for models**, eg. `min_n` for a random forest model or `hidden_units` for a neural network. 
 * **Engine-specific arguments**, eg. `regularization.factor` for the "ranger" engine of random forest. 
 
-To determine tunable parameters for a model or recipe, we can call [`tunable()`](https://www.rdocumentation.org/packages/tune/versions/0.1.1/topics/tunable) on that object. `tunable()` won't pick up engine-specific arguments. 
+To determine tunable parameters for a model, recipe, or workflow, call [`tunable()`](https://www.rdocumentation.org/packages/tune/versions/0.1.1/topics/tunable) on that object. `tunable()` won't pick up engine-specific arguments. 
 
 ```{r}
 tunable(simple_wkf)
@@ -137,10 +139,10 @@ tunable(simple_wkf)
 
 To mark a hyperparameter for tuning, pass `tune()` to the parameter. Multiple hyperparameters can be tuned at a time. 
 
-* Passing a name argument to `tune()` will override the default identifying name for a marked parameter. This is most useful when multiple parameters of the same type are tuned. 
+* Pass a name argument to `tune()` to override the default naming scheme. This is most  when multiple parameters of the same type are tuned. 
 
 ```{r building tunable workflow}
-# In this example, we aren't tuning any recipe steps. 
+# No recipe steps are tuned in this example. 
 tune_recipe <- simple_rec
 
 # Marking some parameters for tuning - note name override 
@@ -169,44 +171,41 @@ tune_params
 extract_parameter_dials(tune_wkf, "trees")
 ```
 
-Each tunable parameter needs a range, representing the upper and lower limits of values to test while tuning. Ranges are automatically generated by `Dials` parameter objects that correspond to specific parameters. To update the testing range for a parameter, use the [`update()`](https://dials.tidymodels.org/reference/update.parameters.html) method. 
+Each tunable parameter needs a range, representing the upper and lower limits of values to test while tuning. Ranges are automatically generated by `Dials` parameter objects that correspond to specific parameters. To update the testing range for parameters, use the [`update()`](https://dials.tidymodels.org/reference/update.parameters.html) method. 
+
+* Some parameters (eg. `mtry`) might require finalization because their range depends on the training dataset. These variables must be updated or the tuning process will fail. [`finalize()`](https://dials.tidymodels.org/reference/finalize.html) can update these parameters based on a dataset,, but this method is sensitive to recipe choices and not used here.  
 
 ```{r tunetrees}
 # a dials::threshold() object was created when we first marked threshold for tuning
 dials::trees()
+# note that mtry is incomplete
+dials::mtry()
 
 # updating the threshold - we only want to test 15 to 500 trees
 tune_params <- tune_params |>
-  update(trees = threshold(c(15, 500)))
+  update(trees = threshold(c(15, 500)),
+         mtry = mtry(c(1, 6)))
 
 extract_parameter_dials(tune_params, "trees")
-```
-
-Some parameters might be initialized with missing values because their range depends on the testing dataset. These variables must be updated or the tuning process will fail. 
-
-* A [`finalize()`](https://dials.tidymodels.org/reference/finalize.html) method exists that can update these parameters based on a dataset. However, this method is finicky and might fail to recognize recipe roles, so updating manually is a safer bet. 
-
-```{r tunemtry}
 extract_parameter_dials(tune_params, "mtry")
-tune_params <- tune_params |> 
-  update(mtry = mtry(c(1, 6)))
 ```
 
 <br>
 
 ### Grid Search and Tuning the Model ###
 
-Once parameter ranges are specified, the next step is to choose a method for finding the best combination. One way to do this is through **grid search**: we create pre-determined sets of parameter values, run the model with them, and select the best one. 
+Once parameter ranges are specified, the next step is to determine what combinations of values yield the best results. One method to do this is through **grid search**: we create pre-determined sets of parameter values, train the model with them, and select the best one. 
 
-* `Tune` also supports **iterative search**, where the results from evaluating one set of parameter values are used to choose the next one. Iterative search is not covered here: for more information, check out check out [Tidy Modeling with R](https://www.tmwr.org/iterative-search.html) and the [Dials Reference](https://dials.tidymodels.org/reference/index.html).
+* `Tune` also supports **iterative search**, where the results from one set of parameter values are used to choose the next one. Iterative search is not covered here: for more information, check out check out [Tidy Modeling with R](https://www.tmwr.org/iterative-search.html) and the [Dials Reference](https://dials.tidymodels.org/reference/index.html).
 
 `Dials` contains a four methods that turn provided parameter ranges into sets of testable values: [`grid_regular()`](https://dials.tidymodels.org/reference/grid_regular.html),
-[`grid_random()`](https://dials.tidymodels.org/reference/grid_regular.html), [`grid_max_entropy()`](https://dials.tidymodels.org/reference/grid_max_entropy.html), and [`grid_latin_hypercube()`](https://dials.tidymodels.org/reference/grid_max_entropy.html).  The simplest of these is `grid_regular()`, which regularly spans the available parameter values. 
+[`grid_random()`](https://dials.tidymodels.org/reference/grid_regular.html), [`grid_max_entropy()`](https://dials.tidymodels.org/reference/grid_max_entropy.html), and [`grid_latin_hypercube()`](https://dials.tidymodels.org/reference/grid_max_entropy.html). 
 
 ```{r}
+# regularly span the available values 
 regular_tune <- grid_regular(tune_params, levels = 4)
 # latin hypercube attempts to fill the parameter space in a semi-random way
-latin_hypercube_tune <- grid_latin_hypercube(tune_params, size = 8)
+latin_hypercube_tune <- grid_latin_hypercube(tune_params, size = 6)
 
 # note the resulting dataframe, which contains combinations of parameter values
 regular_tune
@@ -252,25 +251,26 @@ results
 results |> show_best(metric = "rmse")
 ```
 
-`Tune` also has an [`autoplot()`](https://tune.tidymodels.org/reference/autoplot.tune_results.html) method that helps visualize how parameters affect performance. 
+`Tune` also has an [`autoplot()`](https://tune.tidymodels.org/reference/autoplot.tune_results.html) method that visualizes how parameters affect performance. 
 
 ```{r autoplot}
 autoplot(results)
 ```
 
-After examining results, we can update the model's parameters either by passing them in manually or by using the [`finalize_workflow()`](https://tune.tidymodels.org/reference/finalize_model.html) method. 
+After examining results, update the model's parameters either by passing them in manually or by calling [`finalize_workflow()`](https://tune.tidymodels.org/reference/finalize_model.html). 
 
 ```{r finalizeworkflow}
 # using select_best to extract the best hyperparameter combination
 lowest_rmse <- select_best(results, metric = "rmse")
 
 # updating the workflow 
+# if tuning a model or recipe, use finalize_model or finalize_recipe. 
 tuned_wkf <- finalize_workflow(tune_wkf, lowest_rmse)
 
 tune_wkf
 ```
 
-Finally, we can run the finalized model on the entire training set and collect metrics. [`last_fit()`](https://tune.tidymodels.org/reference/last_fit.html) compresses the testing/training process into a single method call. 
+Finally, run the finalized model on the entire training set and collect metrics. [`last_fit()`](https://tune.tidymodels.org/reference/last_fit.html) compresses the testing/training process into a single method call. 
 
 ```{r lastfit}
 # using last fit to collect results

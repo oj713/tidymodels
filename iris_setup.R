@@ -22,18 +22,18 @@ iris_recipe <- recipe(Species ~ .,
 iris_recipe_prepped <- iris_recipe |>
   prep()
 
-prepped_training <- juice(iris_recipe_prepped)
+prepped_training <- bake(iris_recipe_prepped, NULL)
 prepped_testing <- bake(iris_recipe_prepped, testing(data_split))
 
 #  Parsnip - create a model and generate predictions
 
 rf <- rand_forest() |>
   set_mode("classification") |>
-  set_args(trees = 500) |>
-  set_engine("ranger")
+  set_args(trees = 200) |>
+  set_engine("randomForest")
 
 rf_fit <- rf |>
-  fit(Species ~ Sepal.Length + Sepal.Width + Petal.Width, data = prepped_training)
+  fit(formula(iris_recipe_prepped), data = prepped_training)
 
 iris_preds <- workflow() |>
   add_recipe(iris_recipe) |>

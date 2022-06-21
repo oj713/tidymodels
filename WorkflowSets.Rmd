@@ -6,12 +6,123 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-source("setup.R")
+source("cfin_setup.R")
 ```
 
-Models usually work poorly before they work well. [`WorkflowSets`](https://tune.tidymodels.org/) contains tools to estimate performance and optimize models.  
+When building a model, its often a good idea to compare and contrast different options for preprocessing and model creation. [`Workflowsets`](https://workflowsets.tidymodels.org/) contains tools to build sets of workflows for easy comparison.  
+
+<br>
+
+## Building a Workflow Set ##
+
+In order to build a workflow set, begin by creating a list of preprocessors and a list of models. The preprocessors can be either formulas or recipes. 
+
+* To analyse variable contribution, use the helper [`leave_var_out_formulas()`](https://workflowsets.tidymodels.org/reference/leave_var_out_formulas.html). This method takes in a formula and returns a list of formulas with each predictor left out in turn. 
+* Recipes and models can have tunable parameters. 
+
+This example uses the `cfin` dataset introduced in the [Tune Tutorial](Tune.html). 
+
+```{r}
+# creating three different recipes -- one with no transformations, one where bathymetry is log scaled, and one where bathymetry is log scaled and all variables are normalized. 
+basic_rec <- recipe(abundance ~ ., data = cfin_train) |>
+  update_role(lat, lon, year, new_role = "ID") |>
+  step_corr(threshold = .9) |>
+  # boosted regression trees require dummy variables
+  step_dummy(all_nominal_predictors())
+
+log_bathy <- basic_rec |>
+  step_log(Bathy_depth, base = 10)
+
+normalize <- log_bathy |>
+  step_normalize(all_numeric_predictors())
+
+# the names of each item in the list will be later used to id workflows 
+preproc_list <- list(basic = basic_rec, 
+                     log = log_bathy, 
+                     norm = normalize)
+
+# creating two different models -- random forest and boosted regression tree
+rf <- rand_forest(mode = "regression", 
+                  engine = "ranger", 
+                  trees = 100)
+
+# note required package install: xgboost
+brt <- boost_tree(mode = "regression", 
+                  engine = "xgboost",
+                  trees = 15)
+
+model_list <- list(rf = rf, brt = brt)
+```
+
+To build the actual set of workflows, use the  [`workflow_set()`](https://workflowsets.tidymodels.org/reference/workflow_set.html) method. Each workflow will combine a preprocessor and recipe from the input lists. 
+
+* Workflow sets can also be created from a list of pre-existing workflows by using the [`as_workflow_set()`](https://workflowsets.tidymodels.org/reference/as_workflow_set.html) method. 
+
+```{r}
+cfin_wkfs <- workflow_set(preproc_list, model_list, 
+                          cross = TRUE) # create all combinations of models?
+
+cfin_wkfs
+```
+
+<br>
+
+## Operating Across Workflows ##
+
+After creating the workflow set, apply operations across the set using the [`workflow_map()`](https://workflowsets.tidymodels.org/reference/workflow_map.html) method. Results are collected into the `results` column of the workflow set. 
+
+* `workflow_map()` can apply any `tune_*()` method as well as `tune::fit_resamples()`.
+
+```{r}
+# applying fit_resamples across the workflow set to assess performance
+# using cfin_control and cfin_folds defined in Tune Tutorial
+fitted_wkfs <- cfin_wkfs |>
+  workflow_map(fn = "fit_resamples", # method to apply in quotes
+               verbose = FALSE, 
+               seed = 400, 
+               resamples = cfin_folds, # arguments for fn 
+               metrics =  metric_set(rmse, rsq, mae),
+               control = cfin_control)
+
+fitted_wkfs
+```
+
+<br>
+
+## Analysing Results ##
+
+In order to cleanly assemble results into a tibble, use [`collect_metrics()`](https://workflowsets.tidymodels.org/reference/collect_metrics.workflow_set.html). To determine the best workflow, use [`rank_results()`](https://workflowsets.tidymodels.org/reference/rank_results.html) to sort workflow results by a desired metric. 
+
+```{r}
+# collecting metrics
+fitted_wkfs |>
+  collect_metrics() |>
+  head()
+
+# determining the workflow with the best rmse
+fitted_wkfs |>
+  rank_results(rank_metric = "rmse", select_best = FALSE)
+```
+
+`Workflowsets` also contains an [`autoplot()`](https://workflowsets.tidymodels.org/reference/autoplot.workflow_set.html) method to easily visualize results. `autoplot()` is capable of plotting both `rank_results()` as well as the results for individual workflows. 
+
+* When plotting entire workflow set, the x axis is the rank of the workflow. For more illustrative axes use `ggplot` methods on the output of `rank_results()`. 
+
+```{r}
+fitted_wkfs |>
+  autoplot(rank_metric = "rmse", # metric to determine workflow rank, 
+           id = "workflow_set") # workflow to plot -- use workflow_set to plot all
+```
+
+**Note:** `Workflowsets` has additional capabilities for editing, extracting, and examining individual workflows that are not covered here. See the "Further Resources" section for more information. 
+
+<br>
 
 ## Further Resources ##
 
 * https://www.tmwr.org/tuning.html
   * A much more detailed walkthrough of tuning the model. 
+* https://workflowsets.tidymodels.org/articles/tuning-and-comparing-models.html
+  * Another walkthrough of workflowsets that covers workflow modification and extraction. 
+* https://rpubs.com/marcelocostamagna/730911
+  * Contains an example of applying `tune_grid()` to a tunable workflow set. 

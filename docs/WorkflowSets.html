@@ -58,6 +58,7 @@ if (window.hljs) {
 
 
 
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 
 
 
@@ -267,12 +268,15 @@ $(document).ready(function () {
   <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">Workflowsets</a>
+  <a href="Workflowsets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="Iris.html">Ex. Iris</a>
+  <a href="Iris.html">Iris</a>
+</li>
+<li>
+  <a href="Cfin.html">Cfin</a>
 </li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -289,17 +293,164 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
+<li><a href="#building-a-workflow-set">Building a Workflow Set</a></li>
+<li><a href="#operating-across-workflows">Operating Across Workflows</a></li>
+<li><a href="#analysing-results">Analysing Results</a></li>
 <li><a href="#further-resources">Further Resources</a></li>
 </ul>
 </div>
 
-<p>Models usually work poorly before they work well. <a href="https://tune.tidymodels.org/"><code>WorkflowSets</code></a> contains tools to estimate performance and optimize models.</p>
+<p>When building a model, its often a good idea to compare and contrast different options for preprocessing and model creation. <a href="https://workflowsets.tidymodels.org/"><code>Workflowsets</code></a> contains tools to build sets of workflows for easy comparison.</p>
+<p><br></p>
+<div id="building-a-workflow-set" class="section level2">
+<h2>Building a Workflow Set</h2>
+<p>In order to build a workflow set, begin by creating a list of preprocessors and a list of models. The preprocessors can be either formulas or recipes.</p>
+<ul>
+<li>To analyse variable contribution, use the helper <a href="https://workflowsets.tidymodels.org/reference/leave_var_out_formulas.html"><code>leave_var_out_formulas()</code></a>. This method takes in a formula and returns a list of formulas with each predictor left out in turn.</li>
+<li>Recipes and models can have tunable parameters.</li>
+</ul>
+<p>This example uses the <code>cfin</code> dataset introduced in the <a href="Tune.html">Tune Tutorial</a>.</p>
+<pre class="r"><code># creating three different recipes -- one with no transformations, one where bathymetry is log scaled, and one where bathymetry is log scaled and all variables are normalized. 
+basic_rec &lt;- recipe(abundance ~ ., data = cfin_train) |&gt;
+  update_role(lat, lon, year, new_role = &quot;ID&quot;) |&gt;
+  step_corr(threshold = .9) |&gt;
+  # boosted regression trees require dummy variables
+  step_dummy(all_nominal_predictors())
+
+log_bathy &lt;- basic_rec |&gt;
+  step_log(Bathy_depth, base = 10)
+
+normalize &lt;- log_bathy |&gt;
+  step_normalize(all_numeric_predictors())
+
+# the names of each item in the list will be later used to id workflows 
+preproc_list &lt;- list(basic = basic_rec, 
+                     log = log_bathy, 
+                     norm = normalize)
+
+# creating two different models -- random forest and boosted regression tree
+rf &lt;- rand_forest(mode = &quot;regression&quot;, 
+                  engine = &quot;ranger&quot;, 
+                  trees = 100)
+
+# note required package install: xgboost
+brt &lt;- boost_tree(mode = &quot;regression&quot;, 
+                  engine = &quot;xgboost&quot;,
+                  trees = 15)
+
+model_list &lt;- list(rf = rf, brt = brt)</code></pre>
+<p>To build the actual set of workflows, use the <a href="https://workflowsets.tidymodels.org/reference/workflow_set.html"><code>workflow_set()</code></a> method. Each workflow will combine a preprocessor and recipe from the input lists.</p>
+<ul>
+<li>Workflow sets can also be created from a list of pre-existing workflows by using the <a href="https://workflowsets.tidymodels.org/reference/as_workflow_set.html"><code>as_workflow_set()</code></a> method.</li>
+</ul>
+<pre class="r"><code>cfin_wkfs &lt;- workflow_set(preproc_list, model_list, 
+                          cross = TRUE) # create all combinations of models?
+
+cfin_wkfs</code></pre>
+<pre><code>## # A workflow set/tibble: 6 × 4
+##   wflow_id  info             option    result    
+##   &lt;chr&gt;     &lt;list&gt;           &lt;list&gt;    &lt;list&gt;    
+## 1 basic_rf  &lt;tibble [1 × 4]&gt; &lt;opts[0]&gt; &lt;list [0]&gt;
+## 2 basic_brt &lt;tibble [1 × 4]&gt; &lt;opts[0]&gt; &lt;list [0]&gt;
+## 3 log_rf    &lt;tibble [1 × 4]&gt; &lt;opts[0]&gt; &lt;list [0]&gt;
+## 4 log_brt   &lt;tibble [1 × 4]&gt; &lt;opts[0]&gt; &lt;list [0]&gt;
+## 5 norm_rf   &lt;tibble [1 × 4]&gt; &lt;opts[0]&gt; &lt;list [0]&gt;
+## 6 norm_brt  &lt;tibble [1 × 4]&gt; &lt;opts[0]&gt; &lt;list [0]&gt;</code></pre>
+<p><br></p>
+</div>
+<div id="operating-across-workflows" class="section level2">
+<h2>Operating Across Workflows</h2>
+<p>After creating the workflow set, apply operations across the set using the <a href="https://workflowsets.tidymodels.org/reference/workflow_map.html"><code>workflow_map()</code></a> method. Results are collected into the <code>results</code> column of the workflow set.</p>
+<ul>
+<li><code>workflow_map()</code> can apply any <code>tune_*()</code> method as well as <code>tune::fit_resamples()</code>.</li>
+</ul>
+<pre class="r"><code># applying fit_resamples across the workflow set to assess performance
+# using cfin_control and cfin_folds defined in Tune Tutorial
+fitted_wkfs &lt;- cfin_wkfs |&gt;
+  workflow_map(fn = &quot;fit_resamples&quot;, # method to apply in quotes
+               verbose = FALSE, 
+               seed = 400, 
+               resamples = cfin_folds, # arguments for fn 
+               metrics =  metric_set(rmse, rsq, mae),
+               control = cfin_control)
+
+fitted_wkfs</code></pre>
+<pre><code>## # A workflow set/tibble: 6 × 4
+##   wflow_id  info             option    result   
+##   &lt;chr&gt;     &lt;list&gt;           &lt;list&gt;    &lt;list&gt;   
+## 1 basic_rf  &lt;tibble [1 × 4]&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;
+## 2 basic_brt &lt;tibble [1 × 4]&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;
+## 3 log_rf    &lt;tibble [1 × 4]&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;
+## 4 log_brt   &lt;tibble [1 × 4]&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;
+## 5 norm_rf   &lt;tibble [1 × 4]&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;
+## 6 norm_brt  &lt;tibble [1 × 4]&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;</code></pre>
+<p><br></p>
+</div>
+<div id="analysing-results" class="section level2">
+<h2>Analysing Results</h2>
+<p>In order to cleanly assemble results into a tibble, use <a href="https://workflowsets.tidymodels.org/reference/collect_metrics.workflow_set.html"><code>collect_metrics()</code></a>. To determine the best workflow, use <a href="https://workflowsets.tidymodels.org/reference/rank_results.html"><code>rank_results()</code></a> to sort workflow results by a desired metric.</p>
+<pre class="r"><code># collecting metrics
+fitted_wkfs |&gt;
+  collect_metrics() |&gt;
+  head()</code></pre>
+<pre><code>## # A tibble: 6 × 9
+##   wflow_id  .config              preproc model       .metric .estimator  mean     n std_err
+##   &lt;chr&gt;     &lt;chr&gt;                &lt;chr&gt;   &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
+## 1 basic_rf  Preprocessor1_Model1 recipe  rand_forest mae     standard   0.867     5 0.00520
+## 2 basic_rf  Preprocessor1_Model1 recipe  rand_forest rmse    standard   1.20      5 0.0104 
+## 3 basic_rf  Preprocessor1_Model1 recipe  rand_forest rsq     standard   0.584     5 0.00435
+## 4 basic_brt Preprocessor1_Model1 recipe  boost_tree  mae     standard   0.889     5 0.00633
+## 5 basic_brt Preprocessor1_Model1 recipe  boost_tree  rmse    standard   1.22      5 0.0105 
+## 6 basic_brt Preprocessor1_Model1 recipe  boost_tree  rsq     standard   0.562     5 0.00490</code></pre>
+<pre class="r"><code># determining the workflow with the best rmse
+fitted_wkfs |&gt;
+  rank_results(rank_metric = &quot;rmse&quot;, select_best = FALSE)</code></pre>
+<pre><code>## # A tibble: 18 × 9
+##    wflow_id  .config              .metric  mean std_err     n preprocessor model        rank
+##    &lt;chr&gt;     &lt;chr&gt;                &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;       &lt;int&gt;
+##  1 basic_rf  Preprocessor1_Model1 mae     0.867 0.00520     5 recipe       rand_forest     1
+##  2 basic_rf  Preprocessor1_Model1 rmse    1.20  0.0104      5 recipe       rand_forest     1
+##  3 basic_rf  Preprocessor1_Model1 rsq     0.584 0.00435     5 recipe       rand_forest     1
+##  4 log_rf    Preprocessor1_Model1 mae     0.867 0.00520     5 recipe       rand_forest     2
+##  5 log_rf    Preprocessor1_Model1 rmse    1.20  0.0104      5 recipe       rand_forest     2
+##  6 log_rf    Preprocessor1_Model1 rsq     0.584 0.00437     5 recipe       rand_forest     2
+##  7 norm_rf   Preprocessor1_Model1 mae     0.867 0.00519     5 recipe       rand_forest     3
+##  8 norm_rf   Preprocessor1_Model1 rmse    1.20  0.0104      5 recipe       rand_forest     3
+##  9 norm_rf   Preprocessor1_Model1 rsq     0.584 0.00435     5 recipe       rand_forest     3
+## 10 basic_brt Preprocessor1_Model1 mae     0.889 0.00633     5 recipe       boost_tree      4
+## 11 basic_brt Preprocessor1_Model1 rmse    1.22  0.0105      5 recipe       boost_tree      4
+## 12 basic_brt Preprocessor1_Model1 rsq     0.562 0.00490     5 recipe       boost_tree      4
+## 13 log_brt   Preprocessor1_Model1 mae     0.889 0.00633     5 recipe       boost_tree      5
+## 14 log_brt   Preprocessor1_Model1 rmse    1.22  0.0105      5 recipe       boost_tree      5
+## 15 log_brt   Preprocessor1_Model1 rsq     0.562 0.00490     5 recipe       boost_tree      5
+## 16 norm_brt  Preprocessor1_Model1 mae     0.889 0.00633     5 recipe       boost_tree      6
+## 17 norm_brt  Preprocessor1_Model1 rmse    1.22  0.0105      5 recipe       boost_tree      6
+## 18 norm_brt  Preprocessor1_Model1 rsq     0.562 0.00489     5 recipe       boost_tree      6</code></pre>
+<p><code>Workflowsets</code> also contains an <a href="https://workflowsets.tidymodels.org/reference/autoplot.workflow_set.html"><code>autoplot()</code></a> method to easily visualize results. <code>autoplot()</code> is capable of plotting both <code>rank_results()</code> as well as the results for individual workflows.</p>
+<ul>
+<li>When plotting entire workflow set, the x axis is the rank of the workflow. For more illustrative axes use <code>ggplot</code> methods on the output of <code>rank_results()</code>.</li>
+</ul>
+<pre class="r"><code>fitted_wkfs |&gt;
+  autoplot(rank_metric = &quot;rmse&quot;, # metric to determine workflow rank, 
+           id = &quot;workflow_set&quot;) # workflow to plot -- use workflow_set to plot all</code></pre>
+<p><img src="Workflowsets_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><strong>Note:</strong> <code>Workflowsets</code> has additional capabilities for editing, extracting, and examining individual workflows that are not covered here. See the “Further Resources” section for more information.</p>
+<p><br></p>
+</div>
 <div id="further-resources" class="section level2">
 <h2>Further Resources</h2>
 <ul>
 <li><a href="https://www.tmwr.org/tuning.html" class="uri">https://www.tmwr.org/tuning.html</a>
 <ul>
 <li>A much more detailed walkthrough of tuning the model.</li>
+</ul></li>
+<li><a href="https://workflowsets.tidymodels.org/articles/tuning-and-comparing-models.html" class="uri">https://workflowsets.tidymodels.org/articles/tuning-and-comparing-models.html</a>
+<ul>
+<li>Another walkthrough of workflowsets that covers workflow modification and extraction.</li>
+</ul></li>
+<li><a href="https://rpubs.com/marcelocostamagna/730911" class="uri">https://rpubs.com/marcelocostamagna/730911</a>
+<ul>
+<li>Contains an example of applying <code>tune_grid()</code> to a tunable workflow set.</li>
 </ul></li>
 </ul>
 </div>

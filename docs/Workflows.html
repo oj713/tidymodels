@@ -58,6 +58,7 @@ if (window.hljs) {
 
 
 
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 
 
 
@@ -267,12 +268,15 @@ $(document).ready(function () {
   <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">Workflowsets</a>
+  <a href="Workflowsets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="Iris.html">Ex. Iris</a>
+  <a href="Iris.html">Iris</a>
+</li>
+<li>
+  <a href="Cfin.html">Cfin</a>
 </li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -304,7 +308,7 @@ $(document).ready(function () {
 <p><br></p>
 <div id="creating-a-workflow" class="section level2">
 <h2>Creating a Workflow</h2>
-<p>We can initiate a workflow object with the <a href="https://workflows.tidymodels.org/reference/workflow.html"><code>workflow()</code></a> function. You can add a preprocessor and model in the initial function call or by using <code>add_</code> methods (below).</p>
+<p>Initiate a workflow object with the <a href="https://workflows.tidymodels.org/reference/workflow.html"><code>workflow()</code></a> function. You can add a preprocessor and model in the initial function call or by using <code>add_</code> methods (below).</p>
 <pre class="r"><code>wkf &lt;- workflow(preprocessor = NULL, # pass in preprocessor here 
                 spec = NULL) # pass in model here</code></pre>
 <p><br></p>
@@ -321,11 +325,11 @@ $(document).ready(function () {
 # note the use of everything(), which will ignore variables already referenced
 wkf |&gt;
   add_variables(outcomes = Species, predictors = everything())</code></pre>
-<pre><code>## ══ Workflow ═════════════════════════════════════════════════════════════════════════════════════════════════════
+<pre><code>## ══ Workflow ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 ## Preprocessor: Variables
 ## Model: None
 ## 
-## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Outcomes: Species
 ## Predictors: everything()</code></pre>
 <ul>
@@ -338,11 +342,11 @@ wkf |&gt;
   add_recipe(iris_recipe)
 
 iris_wkf</code></pre>
-<pre><code>## ══ Workflow ═════════════════════════════════════════════════════════════════════════════════════════════════════
+<pre><code>## ══ Workflow ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 ## Preprocessor: Recipe
 ## Model: None
 ## 
-## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## 3 Recipe Steps
 ## 
 ## • step_corr()
@@ -381,7 +385,7 @@ gam_wkf &lt;- workflow() |&gt;
 <p>We will fit and predict the workflow using the <code>data_split</code> object defined in the <a href="RSample.html">RSample Tutorial</a>.</p>
 <pre class="r"><code># fitting the model to the training data
 iris_wkf &lt;- iris_wkf |&gt;
-  # since we already defined the formula in the workflow, fit() only needs the raw data
+  # Since the preprocessor is within the workflow, fit() only needs raw data
   fit(training(data_split)) 
 
 # using augment to generate predictions
@@ -389,48 +393,46 @@ iris_wkf &lt;- iris_wkf |&gt;
 iris_preds &lt;- augment(iris_wkf, testing(data_split))
 head(iris_preds)</code></pre>
 <pre><code>## # A tibble: 6 × 10
-##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species   row .pred_class .pred_setosa .pred_versicolor
-##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;   &lt;int&gt; &lt;fct&gt;              &lt;dbl&gt;            &lt;dbl&gt;
-## 1          4.9         3.1          1.5         0.1 setosa     10 setosa             0.995          0.00367
-## 2          5.4         3.7          1.5         0.2 setosa     11 setosa             1              0      
-## 3          4.8         3            1.4         0.1 setosa     13 setosa             0.995          0.00529
-## 4          5.7         3.8          1.7         0.3 setosa     19 setosa             0.956          0.044  
-## 5          5.1         3.7          1.5         0.4 setosa     22 setosa             1              0      
-## 6          4.6         3.6          1           0.2 setosa     23 setosa             1              0      
-## # … with 1 more variable: .pred_virginica &lt;dbl&gt;</code></pre>
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species   row .pred_class .pred_setosa .pred_versicolor .pred_virginica
+##          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;   &lt;int&gt; &lt;fct&gt;              &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
+## 1          5.1         3.5          1.4         0.2 setosa      1 setosa             1                0                   0
+## 2          4.6         3.1          1.5         0.2 setosa      4 setosa             1                0                   0
+## 3          4.6         3.4          1.4         0.3 setosa      7 setosa             1                0                   0
+## 4          4.8         3            1.4         0.1 setosa     13 setosa             1                0                   0
+## 5          5.7         4.4          1.5         0.4 setosa     16 setosa             0.975            0.025               0
+## 6          5.4         3.9          1.3         0.4 setosa     17 setosa             1                0                   0</code></pre>
 <p><br></p>
 </div>
 <div id="examining-workflows" class="section level2">
 <h2>Examining Workflows</h2>
-<p>We can view information about a workflow object by calling it.</p>
+<p>View information about a workflow object by calling it.</p>
 <pre class="r"><code>iris_wkf</code></pre>
-<pre><code>## ══ Workflow [trained] ═══════════════════════════════════════════════════════════════════════════════════════════
+<pre><code>## ══ Workflow [trained] ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 ## Preprocessor: Recipe
 ## Model: rand_forest()
 ## 
-## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## 3 Recipe Steps
 ## 
 ## • step_corr()
 ## • step_normalize()
 ## • step_rename()
 ## 
-## ── Model ────────────────────────────────────────────────────────────────────────────────────────────────────────
-## Ranger result
+## ── Model ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## 
 ## Call:
-##  ranger::ranger(x = maybe_data_frame(x), y = y, num.trees = ~500,      num.threads = 1, verbose = FALSE, seed = sample.int(10^5,          1), probability = TRUE) 
+##  randomForest(x = maybe_data_frame(x), y = y, ntree = ~200) 
+##                Type of random forest: classification
+##                      Number of trees: 200
+## No. of variables tried at each split: 2
 ## 
-## Type:                             Probability estimation 
-## Number of trees:                  500 
-## Sample size:                      112 
-## Number of independent variables:  4 
-## Mtry:                             2 
-## Target node size:                 10 
-## Variable importance mode:         none 
-## Splitrule:                        gini 
-## OOB prediction error (Brier s.):  0.003538384</code></pre>
-<p>If we want specific information from a workflow, the <code>workflows</code> package contains several extraction methods to retrieve specific aspects of the workflow, such as the fitted model or preprocessor. Several of these methods also work on <code>parsnip</code> model objects.</p>
+##         OOB estimate of  error rate: 0.89%
+## Confusion matrix:
+##            setosa versicolor virginica class.error
+## setosa         39          0         0  0.00000000
+## versicolor      0         38         0  0.00000000
+## virginica       0          1        34  0.02857143</code></pre>
+<p>To retrieve specific information from a workflow, use an extraction method. Extraction methods are not just for <code>Workflow</code> objects – there are also extractor methods for <code>Parsnip</code> models, <code>Tune</code> objects, and workflow sets. =</p>
 <p>A complete list of extractors for workflows can be found <a href="https://workflows.tidymodels.org/reference/extract-workflow.html">here</a>.</p>
 <pre class="r"><code># extracting the (unprepped) preprocessor
 extract_preprocessor(iris_wkf)</code></pre>
@@ -452,20 +454,19 @@ extract_preprocessor(iris_wkf)</code></pre>
 extract_fit_parsnip(iris_wkf)</code></pre>
 <pre><code>## parsnip model object
 ## 
-## Ranger result
 ## 
 ## Call:
-##  ranger::ranger(x = maybe_data_frame(x), y = y, num.trees = ~500,      num.threads = 1, verbose = FALSE, seed = sample.int(10^5,          1), probability = TRUE) 
+##  randomForest(x = maybe_data_frame(x), y = y, ntree = ~200) 
+##                Type of random forest: classification
+##                      Number of trees: 200
+## No. of variables tried at each split: 2
 ## 
-## Type:                             Probability estimation 
-## Number of trees:                  500 
-## Sample size:                      112 
-## Number of independent variables:  4 
-## Mtry:                             2 
-## Target node size:                 10 
-## Variable importance mode:         none 
-## Splitrule:                        gini 
-## OOB prediction error (Brier s.):  0.003538384</code></pre>
+##         OOB estimate of  error rate: 0.89%
+## Confusion matrix:
+##            setosa versicolor virginica class.error
+## setosa         39          0         0  0.00000000
+## versicolor      0         38         0  0.00000000
+## virginica       0          1        34  0.02857143</code></pre>
 <p><br></p>
 </div>
 <div id="further-resources" class="section level2">

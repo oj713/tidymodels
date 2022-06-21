@@ -6,7 +6,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-source("setup.R")
+source("iris_setup.R")
 ```
 
 When building a model, preprocessing steps are often specific to a certain model. `workflows` bundle preprocessing and `parsnip` objects together, such that we can prep the data and fit the model with a single call to `fit()`.
@@ -15,7 +15,7 @@ When building a model, preprocessing steps are often specific to a certain model
 
 ## Creating a Workflow ##
 
-We can initiate a workflow object with the [`workflow()`](https://workflows.tidymodels.org/reference/workflow.html) function. You can add a preprocessor and model in the initial function call or by using `add_` methods (below). 
+Initiate a workflow object with the [`workflow()`](https://workflows.tidymodels.org/reference/workflow.html) function. You can add a preprocessor and model in the initial function call or by using `add_` methods (below). 
 
 ```{r}
 wkf <- workflow(preprocessor = NULL, # pass in preprocessor here 
@@ -93,7 +93,7 @@ We will fit and predict the workflow using the `data_split` object defined in th
 ```{r}
 # fitting the model to the training data
 iris_wkf <- iris_wkf |>
-  # since we already defined the formula in the workflow, fit() only needs the raw data
+  # Since the preprocessor is within the workflow, fit() only needs raw data
   fit(training(data_split)) 
 
 # using augment to generate predictions
@@ -106,13 +106,13 @@ head(iris_preds)
 
 ## Examining Workflows ##
 
-We can view information about a workflow object by calling it. 
+View information about a workflow object by calling it. 
 
 ```{r}
 iris_wkf
 ```
 
-If we want specific information from a workflow, the `workflows` package contains several extraction methods to retrieve specific aspects of the workflow, such as the fitted model or preprocessor. Several of these methods also work on `parsnip` model objects. 
+To retrieve specific information from a workflow, use an extraction method. Extraction methods are not just for `Workflow` objects -- there are also extractor methods for `Parsnip` models, `Tune` objects, and workflow sets. =
 
 A complete list of extractors for workflows can be found [here](https://workflows.tidymodels.org/reference/extract-workflow.html).
 

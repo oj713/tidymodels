@@ -7,7 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This page contains the complete code for the iris modeling example. For a detailed walkthrough, look at the other pages on this site. Note that this example uses a `workflow` object to create the final predictions, and thus the recipe and parsnip model are not prepped or fit independently. 
+This page contains the abbreviated code for the iris modeling example. For a detailed walkthrough, look at the [`RSample`](RSample.html) through [`Workflows`](Workflows.html) tutorials. Note that this example uses a `workflow` object to create the final predictions, and thus the recipe and parsnip model are not prepped or fit independently. 
 
 <br>
 
@@ -41,8 +41,8 @@ iris_recipe <- recipe(Species ~ .,
 # Parsnip - create a model
 rf <- rand_forest() |>
   set_mode("classification") |>
-  set_args(trees = 500) |>
-  set_engine("ranger")
+  set_args(trees = 200) |>
+  set_engine("randomForest")
 ```
 
 ```{r}

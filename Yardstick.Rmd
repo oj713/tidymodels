@@ -6,7 +6,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-source("setup.R")
+source("iris_setup.R")
 ```
 
 The final step of building a model is to evaluate its performance. The [`Yardstick`](https://yardstick.tidymodels.org/) package contains various methods to summarize and display model results in a tidy manner. 
@@ -47,7 +47,7 @@ For a full list of `yardstick` functions, look at the [Official Reference](https
 
 ### Curve Functions ###
 
-`yardstick` contains four curve-based functions: [`roc_curve()`](https://yardstick.tidymodels.org/reference/roc_curve.html), [`gain_curve()`](https://yardstick.tidymodels.org/reference/gain_curve.html), [`pr_curve()`](https://yardstick.tidymodels.org/reference/pr_curve.html), and [`lift_curve()`](https://yardstick.tidymodels.org/reference/lift_curve.html. These methods all have corresponding `ggplot2::autoplot()` methods that allow for easy visualization. 
+`yardstick` contains four curve-based functions: [`roc_curve()`](https://yardstick.tidymodels.org/reference/roc_curve.html), [`gain_curve()`](https://yardstick.tidymodels.org/reference/gain_curve.html), [`pr_curve()`](https://yardstick.tidymodels.org/reference/pr_curve.html), and [`lift_curve()`](https://yardstick.tidymodels.org/reference/lift_curve.html). These methods all have corresponding `ggplot2::autoplot()` methods that allow for easy visualization. 
 
 ```{r}
 # note that the arguments are the same as those for roc_auc

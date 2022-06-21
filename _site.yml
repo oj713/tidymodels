@@ -18,11 +18,14 @@ navbar:
     - text: "Tune"
       href: Tune.html
     - text: "Workflowsets"
-      href: WorkflowSets.html
+      href: Workflowsets.html
   right:
-    - text: "Ex. Iris"
+    - text: "Iris"
       href: Iris.html
+    - text: "Cfin"
+      href: Cfin.html
 output:
   html_document:
     theme: cosmo
     toc: true
+    css: "stylesheet.css"

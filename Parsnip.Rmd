@@ -6,7 +6,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-source("setup.R")
+source("iris_setup.R")
 ```
 
 When building a model for your dataset, there are a wide variety of models and model packages that each have their own unique parameters and specifications. [`Parsnip`](https://parsnip.tidymodels.org/) provides a unified, simple interface for model creation so that you can easily swap between models without worrying about minor syntax changes. 
@@ -17,13 +17,13 @@ When building a model for your dataset, there are a wide variety of models and m
 
 A `parsnip` model is built by defining an initial model object, setting its parameters/engine, and then fitting the model to data. Each type of supported model has its own initializing function. 
 
-For example, suppose we wanted to create a linear regression model. To initiate this model, we would call the [`linear_reg()`](https://parsnip.tidymodels.org/reference/linear_reg.html) function. 
+For example, suppose we wanted to create a linear regression model. To initiate this model, call the [`linear_reg()`](https://parsnip.tidymodels.org/reference/linear_reg.html) function. 
 
 ```{r} 
 lr <- linear_reg()
 ```
 
-Alternatively, to initialize a random forest model we would use the [`rand_forest()`](https://parsnip.tidymodels.org/reference/rand_forest.html) function. 
+Alternatively, to initialize a random forest model use the [`rand_forest()`](https://parsnip.tidymodels.org/reference/rand_forest.html) function. 
 
 ```{r}
 rf <- rand_forest()
@@ -35,7 +35,7 @@ Other models supported include logistic regression, boosted trees, k nearest nei
 
 ### Setting Parameters ###
 
-Once we've initialized a model, we can set its specifications/parameters. 
+After initializing a model, set its specifications/parameters. 
 
 * [**`set_mode()`**](https://parsnip.tidymodels.org/reference/set_args.html) determines whether the model is a classification or regression model. Not every model has both options -- for example, `linear_reg()` only supports regression. 
 
@@ -50,11 +50,12 @@ lr <- lr |>
 
 rf <- rf |>
   set_mode("classification") |>
-  set_args(trees = 500)
+  set_args(trees = 200)
 ```
 
-* [**`set_engine()`**](https://parsnip.tidymodels.org/reference/set_engine.html) determines the model *engine*, or package that will handle model creation. For many models, there are multiple packages that can run that model, each with their own unique syntax and interface. `parsnip` regularizes the interface, but doesn't replace the modeling package -- meaning that we must specify which package we'd like to use. If later on we'd like to switch engines, simply change the argument for `set_engine()`. 
-  * you might have to install the package for the desired engine. 
+* [**`set_engine()`**](https://parsnip.tidymodels.org/reference/set_engine.html) determines the model *engine*, or package that will handle model creation. For many models, there are multiple packages that can run that model, each with their own unique syntax and interface. `parsnip` unifies the interface, but doesn't replace the modeling package -- meaning that the underlying modelling engine must be specified. To switch engines later on, simply change the argument for `set_engine()`. 
+
+  * Engines might require package installs. 
   * use [`show_engines()`](https://parsnip.tidymodels.org/reference/show_engines.html) retrieve a list of all supported engines for a model. Some engines require a `parsnip` extension package and may not be shown. 
   * To see how `parsnip` arguments transfer to a specific engine, use the [`translate()`](https://parsnip.tidymodels.org/reference/translate.html) method. 
   * Some models have engine-specific arguments that do not translate to other engines. Pass these arguments to `set_engine()`. 
@@ -68,7 +69,7 @@ show_engines("rand_forest")
 rf <- rf |>
   set_engine("ranger", verbose = TRUE)
 
-# if I want to change the engine, I could simply call set_engine() again
+# to change the engine, call set_engine() again
 rf <- rf |>
   set_engine("randomForest")
 
@@ -91,7 +92,7 @@ rand_forest(mode = "classification",
 
 ### Fitting ###
 
-Once a model has been initialized and defined, we can execute the model on our prepped training data using the `fit()` function. `fit()` takes in a formula and a model object and returns a fitted model. 
+Once a model has been initialized and defined, execute the model on our prepped training data using the `fit()` function. `fit()` takes in a formula and a model object and returns a fitted model. 
 
 We will use the `iris_recipe_prepped`, `prepped_training` and `prepped_testing` datasets defined in the [Recipes Tutorial](Recipes.html). 
 

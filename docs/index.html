@@ -11,7 +11,7 @@
 
 
 
-<title>Overview</title>
+<title>Welcome!</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -58,6 +58,7 @@ if (window.hljs) {
 
 
 
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 
 
 
@@ -267,12 +268,15 @@ $(document).ready(function () {
   <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">Workflowsets</a>
+  <a href="Workflowsets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="Iris.html">Ex. Iris</a>
+  <a href="Iris.html">Iris</a>
+</li>
+<li>
+  <a href="Cfin.html">Cfin</a>
 </li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -283,21 +287,25 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Overview</h1>
+<h1 class="title toc-ignore">Welcome!</h1>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#dataset">Dataset</a></li>
+<li><a href="#overview">Overview</a></li>
 <li><a href="#general-resources">General Resources</a></li>
 <li><a href="#about">About</a></li>
 </ul>
 </div>
 
-<p><a href="https://www.tidymodels.org/">Tidymodels</a> is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the <a href="https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64">pipe operator</a>.</p>
-<p>To use Tidymodels, simply install and load the <code>tidymodels</code> package. The <code>tidymodels</code> package loads all of its core modeling packages as well as some helpful <code>tidyverse</code> packages such as <code>dplyr</code> and <code>ggplot2</code>. For a complete list of packages loaded by Tidymodels, reference their <a href="https://www.tidymodels.org/packages/">packages page</a>.</p>
+<p><a href="https://www.tidymodels.org/">Tidymodels</a> is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simple, readable code by creating common interfaces</p>
+<p>Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the <a href="https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64">pipe operator</a>.</p>
+<p>To use Tidymodels, simply install and load the <code>tidymodels</code> package. The <code>tidymodels</code> package loads all of its core modeling packages as well as some helpful <code>tidyverse</code> packages such as <code>dplyr</code> and <code>ggplot2</code>. Find a complete list of Tidymodels packages <a href="https://www.tidymodels.org/packages/">here</a>.</p>
 <pre class="r"><code>library(tidymodels)</code></pre>
+<p><br></p>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
 <p>Each tab on this site corresponds to a different package from Tidymodels:</p>
 <ul>
 <li><a href="RSample.html"><code>RSample</code></a> - Re-sample and split training/testing data</li>
@@ -305,34 +313,18 @@ $(document).ready(function () {
 <li><a href="Parsnip.html"><code>Parsnip</code></a> - Common, simple interface for model initiation</li>
 <li><a href="Yardstick.html"><code>Yardstick</code></a> - Evaluate model performance</li>
 <li><a href="Workflows.html"><code>Workflows</code></a> - Bundle recipes and models into a single object</li>
-<li><a href="WorkflowSets.html"><code>Workflowsets</code></a> - Create and compare sets of workflows</li>
 <li><a href="Tune.html"><code>Tune</code></a> - Tune hyperparameters for models</li>
+<li><a href="WorkflowSets.html"><code>Workflowsets</code></a> - Create and compare sets of workflows</li>
 </ul>
-<p>Additionally, this page walks through some examples of modeling with tidymodels:</p>
+<p>These pages are meant to be read in order, as modelling examples are built cumulatively. To view abbreviated versions of the code through each tutorial, view the following tabs:</p>
 <ul>
-<li><a href="Iris.html">Iris</a> - Predicting Iris species from measurements.</li>
+<li><a href="Iris.html">Iris</a> - Predicting Iris species from their measurements.</li>
+<li><a href="Cfin.html">Cfin</a> - Optimizing and comparing models of <em>C. Finmarchicus</em> abundance.</li>
 </ul>
-<p><br></p>
-<div id="dataset" class="section level3">
-<h3>Dataset</h3>
-<p>This site introduces the Tidymodels packages by walking through the complete modelling process with an example dataset, defined below.</p>
-<p><code>data_iris</code> is a modified version of the inbuilt <code>iris</code> dataset that includes row number as a variable.</p>
-<pre class="r"><code>data_iris &lt;- bind_cols(all_of(iris), 
-                       row = 1:nrow(iris))
-
-head(data_iris)</code></pre>
-<pre><code>##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 1          5.1         3.5          1.4         0.2  setosa   1
-## 2          4.9         3.0          1.4         0.2  setosa   2
-## 3          4.7         3.2          1.3         0.2  setosa   3
-## 4          4.6         3.1          1.5         0.2  setosa   4
-## 5          5.0         3.6          1.4         0.2  setosa   5
-## 6          5.4         3.9          1.7         0.4  setosa   6</code></pre>
-<p>Using this example dataset, we will predict <code>Species</code> based on the other variables (row is an identification variable and not used as a predictor). This modelling exercise spans across multiple pages on this site – the complete code is aggregated at the <a href="Iris.html">Iris modelling example</a>.</p>
 <p><br></p>
 </div>
-<div id="general-resources" class="section level3">
-<h3>General Resources</h3>
+<div id="general-resources" class="section level2">
+<h2>General Resources</h2>
 <ul>
 <li><a href="https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/" class="uri">https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/</a>
 <ul>
@@ -345,10 +337,10 @@ head(data_iris)</code></pre>
 </ul>
 <p><br></p>
 </div>
-<div id="about" class="section level3">
-<h3>About</h3>
+<div id="about" class="section level2">
+<h2>About</h2>
 <p>This site is authored by Omi Johnson and is meant to serve as an introductory walkthrough of Tidymodels. This site was built using RMarkdown and GitHub hosting – find a simple walkthrough of how to build your own RMarkdown site <a href="https://psyteachr.github.io/hack-your-data/rmarkdown_2.html">here</a>. The source repository for this site is on my <a href="https://github.com/oj713/tidymodels">GitHub</a>.</p>
-<p>Questions? Contact me by email at <strong><a href="mailto:ojohnson@bigelow.org" class="email">ojohnson@bigelow.org</a></strong></p>
+<p>Questions? Comments? Contact me by email at <strong><a href="mailto:ojohnson@bigelow.org" class="email">ojohnson@bigelow.org</a></strong></p>
 <p><strong>NOTE</strong>: This is not a comprehensive guide. These notes are incomplete and only mention methods/techniques that the author is familiar with. Descriptions of packages and methods most likely do not include all possible arguments or applications. For a complete list of each package’s methods and capabilities, please look at the official documentation.</p>
 </div>
 

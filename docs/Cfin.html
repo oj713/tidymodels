@@ -11,7 +11,7 @@
 
 
 
-<title>Yardstick</title>
+<title>Cfin</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -287,90 +287,153 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Yardstick</h1>
+<h1 class="title toc-ignore">Cfin</h1>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#metric-methods">Metric Methods</a></li>
-<li><a href="#curve-functions">Curve Functions</a></li>
-<li><a href="#metric-sets">Metric Sets</a></li>
+<li><a href="#tune">Tune</a></li>
+<li><a href="#workflowsets">Workflowsets</a></li>
 </ul>
 </div>
 
-<p>The final step of building a model is to evaluate its performance. The <a href="https://yardstick.tidymodels.org/"><code>Yardstick</code></a> package contains various methods to summarize and display model results in a tidy manner.</p>
+<p>This page contains the abbreviated code for the <em>C. Finmarchicus</em> modeling examples. For a detailed walkthrough, look at the <a href="Tune.html"><code>Tune</code></a> and <a href="Workflowsets.html"><code>Workflowsets</code></a> tutorials. The <strong>ecomon_data.csv.gz</strong> datafile is available for download on <a href="https://github.com/oj713/tidymodels">my GitHub</a>.</p>
 <p><br></p>
-<div id="metric-methods" class="section level3">
-<h3>Metric Methods</h3>
-<p><code>yardstick</code> contains a variety of methods to extract evaluation metrics from a dataset. There are metric methods for both regression and classification models.</p>
-<ul>
-<li><strong>Input:</strong> Each <code>yardstick</code> metric method takes as argument a dataframe, truth column, and estimate column(s).</li>
-<li><strong>Output:</strong> Results will be returned as a tibble containing <code>metric</code>, <code>estimator</code>, and <code>estimate</code> information.</li>
-</ul>
-<p>We will generate accuracy metrics for the <code>iris_preds</code> data defined in the <a href="Parsnip.html">Parsnip Tutorial</a>. As a note, the predictions have a 100% accuracy rate, so the resulting metrics might not be very illustrative.</p>
-<pre class="r"><code># computing roc_auc and accuracy for iris predictions
-roc_auc(iris_preds,
-        truth = Species, 
-        .pred_setosa:.pred_virginica) # all estimate classes</code></pre>
-<pre><code>## # A tibble: 1 × 3
-##   .metric .estimator .estimate
-##   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
-## 1 roc_auc hand_till          1</code></pre>
-<pre class="r"><code>accuracy(iris_preds, 
-         truth = Species, 
-         estimate = .pred_class)</code></pre>
-<pre><code>## # A tibble: 1 × 3
-##   .metric  .estimator .estimate
-##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy multiclass         1</code></pre>
-<p>All metric methods also have a corresponding vectorized method (ending with <code>_vec</code>) that takes in truth and estimate as vectors and returns the desired metric raw.</p>
-<pre class="r"><code># using the vectorized accuracy metric
-accuracy_vec(iris_preds$Species, 
-             iris_preds$.pred_class)</code></pre>
-<pre><code>## [1] 1</code></pre>
-<p>For a full list of <code>yardstick</code> functions, look at the <a href="https://yardstick.tidymodels.org/reference/index.html">Official Reference</a>.</p>
-<p><br></p>
-</div>
-<div id="curve-functions" class="section level3">
-<h3>Curve Functions</h3>
-<p><code>yardstick</code> contains four curve-based functions: <a href="https://yardstick.tidymodels.org/reference/roc_curve.html"><code>roc_curve()</code></a>, <a href="https://yardstick.tidymodels.org/reference/gain_curve.html"><code>gain_curve()</code></a>, <a href="https://yardstick.tidymodels.org/reference/pr_curve.html"><code>pr_curve()</code></a>, and <a href="https://yardstick.tidymodels.org/reference/lift_curve.html"><code>lift_curve()</code></a>. These methods all have corresponding <code>ggplot2::autoplot()</code> methods that allow for easy visualization.</p>
-<pre class="r"><code># note that the arguments are the same as those for roc_auc
-roc_curve(iris_preds, truth = Species, .pred_setosa:.pred_virginica) |&gt;
-  autoplot()</code></pre>
-<p><img src="Yardstick_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-</div>
-<div id="metric-sets" class="section level3">
-<h3>Metric Sets</h3>
-<p>If you want to extract multiple metrics from a dataset, you can package those metrics into a single method call using <a href="https://yardstick.tidymodels.org/reference/metric_set.html"><code>metric_set()</code></a>. The created method will return each desired metric and its estimate in a tibble.</p>
-<ul>
-<li>Note that metric sets can only contain either classification or regression metrics – <strong>not</strong> a mix of both.</li>
-</ul>
-<pre class="r"><code># say we want to find auc, sensitivity, specificity, and accuracy 
-# pass in yardstick method names to metric_set()
-my_metrics &lt;- metric_set(roc_auc, sens, spec, accuracy)
+<pre class="r"><code>library(tidymodels)
 
-# retrieving the metrics using our newly defined method 
-# pass in all arguments needed for contained methods
-my_metrics(iris_preds, 
-           truth = Species,
-           estimate = .pred_class, # for sens, spec, and accuracy
-           .pred_setosa:.pred_virginica) # for roc_auc</code></pre>
-<pre><code>## # A tibble: 4 × 3
-##   .metric  .estimator .estimate
-##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 sens     macro              1
-## 2 spec     macro              1
-## 3 accuracy multiclass         1
-## 4 roc_auc  hand_till          1</code></pre>
-<p>The <a href="https://yardstick.tidymodels.org/reference/metrics.html"><strong><code>metrics()</code></strong></a> function is an <code>yardstick</code> provided metric set that generates common metrics based on the provided type of input data. For example, for numeric models, <code>metrics()</code> will return <code>rmse</code>, <code>rsq</code>, and <code>mae</code>.</p>
-<pre class="r"><code># for multiclass models, metrics() will return accuracy and the Kappa statistic
-metrics(iris_preds, truth = Species, estimate = .pred_class)</code></pre>
-<pre><code>## # A tibble: 2 × 3
-##   .metric  .estimator .estimate
-##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy multiclass         1
-## 2 kap      multiclass         1</code></pre>
+# Defining cfin dataset
+cfin &lt;- readr::read_csv(&quot;ecomon_data.csv.gz&quot;, col_types = readr::cols()) |&gt;
+  na.omit() |&gt;
+  mutate(month = lubridate::month(date) |&gt; as.factor(),
+         year = lubridate::year(date),
+         abundance = log10(calfin_10m2 + 1)) |&gt;
+  select(lat, lon, year, month, abundance, Bathy_depth, sfc_temp:btm_salt)
+
+# Splitting the data
+set.seed(400)
+cfin_split &lt;- initial_split(cfin, prop = 3/4, strata = abundance)
+cfin_train &lt;- training(cfin_split)
+
+cfin_folds &lt;- cfin_train |&gt;
+  vfold_cv(v = 5, repeats = 1, strata = abundance)</code></pre>
+<p><br></p>
+<div id="tune" class="section level2">
+<h2>Tune</h2>
+<pre class="r"><code># Initializing tunable workflow
+tune_recipe &lt;- recipe(abundance ~ ., data = cfin_train) |&gt;
+  update_role(lat, lon, year, new_role = &quot;ID&quot;) |&gt;
+  step_log(Bathy_depth, base = 10) |&gt;
+  step_corr(threshold = .9) |&gt;
+  step_normalize(all_numeric_predictors())
+
+tune_model &lt;- rand_forest(trees = tune(), mtry = tune()) |&gt;
+  set_mode(&quot;regression&quot;) |&gt;
+  set_engine(&quot;ranger&quot;, regularization.factor = tune(&quot;regfactor&quot;))
+
+tune_wkf &lt;- workflow(preprocessor = tune_recipe, 
+                     spec = tune_model)
+
+# Grid tuning object
+latin_hypercube_tune &lt;- tune_wkf |&gt;
+  extract_parameter_set_dials() |&gt;
+  update(trees = threshold(c(15, 500)),
+         mtry = mtry(c(1, 6))) |&gt;
+  grid_latin_hypercube(size = 6)
+
+# Performing tuning
+results &lt;- tune_grid(tune_wkf, 
+                     cfin_folds, 
+                     grid = latin_hypercube_tune,
+                     metrics = metric_set(rsq, rmse, mae))
+
+autoplot(results)</code></pre>
+<p><img src="Cfin_files/figure-html/tune-1.png" width="672" /></p>
+<pre class="r"><code># Finalizing workflow
+tuned_wkf &lt;- finalize_workflow(tune_wkf, 
+                               select_best(results, metric = &quot;rmse&quot;))
+
+# Final predictions 
+final_results &lt;- last_fit(tuned_wkf, cfin_split)
+
+augment(final_results)</code></pre>
+<pre><code>## # A tibble: 4,451 × 12
+##      lat   lon  year month abundance Bathy_depth sfc_temp sfc_salt btm_temp
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;     &lt;dbl&gt;       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1  40.6 -71.4  1977 8          5.41        64.6     19.8     32.4     9.18
+##  2  40.2 -69.4  1977 8          5.29        86.5     20.7     33.0     9.06
+##  3  40.8 -68.8  1977 8          4.96        68.6     12.9     32.7    11.7 
+##  4  40.9 -68.6  1977 8          4.39        56.2     12.4     32.6    12.4 
+##  5  41.1 -67.9  1977 8          4.70        49.1     13.2     32.6    13.1 
+##  6  41.9 -68.7  1977 8          5.64       163.      18.8     31.9     5.02
+##  7  41.8 -69.6  1977 8          5.79       165.      18.7     31.8     5.09
+##  8  43.2 -69.8  1977 8          5.81       140.      17.6     31.5     5.12
+##  9  43.6 -69.1  1977 8          6.42       141.      16.1     32.0     5.88
+## 10  43.3 -68.8  1977 8          5.90       139.      15.9     32.3     6.44
+## # … with 4,441 more rows, and 3 more variables: btm_salt &lt;dbl&gt;, .pred &lt;dbl&gt;,
+## #   .resid &lt;dbl&gt;</code></pre>
+<p><br></p>
+</div>
+<div id="workflowsets" class="section level2">
+<h2>Workflowsets</h2>
+<pre class="r"><code># Initializing component recipes and models
+basic_rec &lt;- recipe(abundance ~ ., data = cfin_train) |&gt;
+  update_role(lat, lon, year, new_role = &quot;ID&quot;) |&gt;
+  step_corr(threshold = .9) |&gt;
+  step_dummy(all_nominal_predictors())
+log_bathy &lt;- basic_rec |&gt;
+  step_log(Bathy_depth, base = 10)
+normalize &lt;- log_bathy |&gt;
+  step_normalize(all_numeric_predictors())
+
+rf &lt;- rand_forest(mode = &quot;regression&quot;, 
+                  engine = &quot;ranger&quot;, 
+                  trees = 100)
+brt &lt;- boost_tree(mode = &quot;regression&quot;, 
+                  engine = &quot;xgboost&quot;,
+                  trees = 15)
+
+# Initializing Workflow set
+cfin_wkfs &lt;- workflow_set(preproc = list(basic = basic_rec, 
+                                         log = log_bathy, 
+                                         norm = normalize), 
+                          models = list(rf = rf, 
+                                        brt = brt),
+                          cross = TRUE)
+
+# Executing operation across workflows
+fitted_wkfs &lt;- cfin_wkfs |&gt;
+  workflow_map(fn = &quot;fit_resamples&quot;,
+               verbose = FALSE, 
+               seed = 400, 
+               resamples = cfin_folds, 
+               metrics =  metric_set(rmse, rsq, mae),
+               control = control_resamples(save_pred = TRUE, save_workflow = TRUE))
+
+# Collecting Results
+fitted_wkfs |&gt;
+  rank_results(rank_metric = &quot;rmse&quot;, select_best = FALSE)</code></pre>
+<pre><code>## # A tibble: 18 × 9
+##    wflow_id  .config        .metric  mean std_err     n preprocessor model  rank
+##    &lt;chr&gt;     &lt;chr&gt;          &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;        &lt;chr&gt; &lt;int&gt;
+##  1 basic_rf  Preprocessor1… mae     0.867 0.00520     5 recipe       rand…     1
+##  2 basic_rf  Preprocessor1… rmse    1.20  0.0104      5 recipe       rand…     1
+##  3 basic_rf  Preprocessor1… rsq     0.584 0.00435     5 recipe       rand…     1
+##  4 log_rf    Preprocessor1… mae     0.867 0.00520     5 recipe       rand…     2
+##  5 log_rf    Preprocessor1… rmse    1.20  0.0104      5 recipe       rand…     2
+##  6 log_rf    Preprocessor1… rsq     0.584 0.00437     5 recipe       rand…     2
+##  7 norm_rf   Preprocessor1… mae     0.867 0.00519     5 recipe       rand…     3
+##  8 norm_rf   Preprocessor1… rmse    1.20  0.0104      5 recipe       rand…     3
+##  9 norm_rf   Preprocessor1… rsq     0.584 0.00435     5 recipe       rand…     3
+## 10 basic_brt Preprocessor1… mae     0.889 0.00633     5 recipe       boos…     4
+## 11 basic_brt Preprocessor1… rmse    1.22  0.0105      5 recipe       boos…     4
+## 12 basic_brt Preprocessor1… rsq     0.562 0.00490     5 recipe       boos…     4
+## 13 log_brt   Preprocessor1… mae     0.889 0.00633     5 recipe       boos…     5
+## 14 log_brt   Preprocessor1… rmse    1.22  0.0105      5 recipe       boos…     5
+## 15 log_brt   Preprocessor1… rsq     0.562 0.00490     5 recipe       boos…     5
+## 16 norm_brt  Preprocessor1… mae     0.889 0.00633     5 recipe       boos…     6
+## 17 norm_brt  Preprocessor1… rmse    1.22  0.0105      5 recipe       boos…     6
+## 18 norm_brt  Preprocessor1… rsq     0.562 0.00489     5 recipe       boos…     6</code></pre>
 </div>
 
 

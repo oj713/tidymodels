@@ -58,6 +58,7 @@ if (window.hljs) {
 
 
 
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 
 
 
@@ -267,12 +268,15 @@ $(document).ready(function () {
   <a href="Tune.html">Tune</a>
 </li>
 <li>
-  <a href="WorkflowSets.html">Workflowsets</a>
+  <a href="Workflowsets.html">Workflowsets</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="Iris.html">Ex. Iris</a>
+  <a href="Iris.html">Iris</a>
+</li>
+<li>
+  <a href="Cfin.html">Cfin</a>
 </li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -289,6 +293,7 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
+<li><a href="#the-iris-dataset">The Iris Dataset</a></li>
 <li><a href="#training-testing-splits">Training / Testing Splits</a></li>
 <li><a href="#resampling">Resampling</a>
 <ul>
@@ -303,6 +308,23 @@ $(document).ready(function () {
 
 <p>When building a model, the source dataset needs to be split in some way so that we can reserve data to both build the model and assess its performance. <a href="https://rsample.tidymodels.org/">RSample</a> contains tools for dataset splitting and resampling.</p>
 <p><br></p>
+<div id="the-iris-dataset" class="section level2">
+<h2>The Iris Dataset</h2>
+<p><code>data_iris</code> is a modified version of the inbuilt <code>iris</code> dataset that includes row number as a variable.</p>
+<pre class="r"><code>data_iris &lt;- bind_cols(all_of(iris), 
+                       row = 1:nrow(iris))
+
+head(data_iris)</code></pre>
+<pre><code>##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
+## 1          5.1         3.5          1.4         0.2  setosa   1
+## 2          4.9         3.0          1.4         0.2  setosa   2
+## 3          4.7         3.2          1.3         0.2  setosa   3
+## 4          4.6         3.1          1.5         0.2  setosa   4
+## 5          5.0         3.6          1.4         0.2  setosa   5
+## 6          5.4         3.9          1.7         0.4  setosa   6</code></pre>
+<p>Using this example dataset, we will build a model that can predict <code>Species</code> based on provided measurements (<code>row</code> is an identification variable and not used as a predictor).</p>
+<p><br></p>
+</div>
 <div id="training-testing-splits" class="section level2">
 <h2>Training / Testing Splits</h2>
 <p>To create a randomly divided training/testing split using RSample, we can use the <a href="https://rsample.tidymodels.org/reference/initial_split.html"><code>initial_split()</code></a> function. This function generates an <code>rsplit</code> object that contains partitioning information for the data.</p>
@@ -323,22 +345,22 @@ data_train &lt;- training(data_split)
 
 head(data_test)</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 1           5.1         3.5          1.4         0.2  setosa   1
+## 5           5.0         3.6          1.4         0.2  setosa   5
 ## 8           5.0         3.4          1.5         0.2  setosa   8
-## 9           4.4         2.9          1.4         0.2  setosa   9
-## 15          5.8         4.0          1.2         0.2  setosa  15
-## 24          5.1         3.3          1.7         0.5  setosa  24
-## 25          4.8         3.4          1.9         0.2  setosa  25</code></pre>
+## 17          5.4         3.9          1.3         0.4  setosa  17
+## 20          5.1         3.8          1.5         0.3  setosa  20
+## 21          5.4         3.4          1.7         0.2  setosa  21
+## 23          4.6         3.6          1.0         0.2  setosa  23</code></pre>
 <p><br></p>
 </div>
 <div id="resampling" class="section level2">
 <h2>Resampling</h2>
 <p><em>If you are building your first model, skip this section!</em></p>
-<p>When building a model, we usually want to estimate the performance of the model <strong>before</strong> we evaluate it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. Learn to work with resamples in the <a href="Tune.html">Tune</a> and <a href="WorkflowSets.html">Workflowsets</a> tutorials.</p>
+<p>When building a model, we usually want to estimate the performance of the model <strong>before</strong> evaluating it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. Learn to work with resamples in the <a href="Tune.html">Tune</a> and <a href="WorkflowSets.html">Workflowsets</a> tutorials.</p>
 <p><br></p>
 <div id="validation-set" class="section level3">
 <h3>Validation Set</h3>
-<p>A validation set is a single analysis/assessment split performed on the training data. It’s best for large datasets, where we might not need multiple resamples to understand performance.</p>
+<p>A validation set is a single analysis/assessment split performed on the training data. Validation sets are best for large datasets because multiple resamples are not needed to understand performance.</p>
 <p>Use <a href="https://rsample.tidymodels.org/reference/validation_split.html"><code>validation_split()</code></a> and <code>validation_time_split()</code> to create a validation split or time-based validation split, respectively.</p>
 <pre class="r"><code>validate &lt;- validation_split(data_train, 
                              prop = 3/4, # proportion for analysis set
@@ -350,7 +372,7 @@ validate</code></pre>
 ##   splits          id        
 ##   &lt;list&gt;          &lt;chr&gt;     
 ## 1 &lt;split [83/29]&gt; validation</code></pre>
-<p>We can retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
+<p>Retrieve data from a specific split object using <code>analysis()</code> and <code>assessment()</code>.</p>
 <ul>
 <li><strong>Note:</strong> although <code>analysis()</code> and <code>assessment()</code> support additional arguments, when simply passed an <code>rsplit</code> object they act identically to <code>training()</code> and <code>testing()</code>. The names are different to distinguish resampling from the original train/test split.</li>
 </ul>
@@ -360,12 +382,12 @@ v_split &lt;- validate[[1]][[1]]
 # pulling analysis set 
 analysis(v_split) |&gt; head()</code></pre>
 <pre><code>##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species row
-## 3           4.7         3.2          1.3         0.2  setosa   3
-## 48          4.6         3.2          1.4         0.2  setosa  48
-## 21          5.4         3.4          1.7         0.2  setosa  21
-## 6           5.4         3.9          1.7         0.4  setosa   6
-## 11          5.4         3.7          1.5         0.2  setosa  11
-## 45          5.1         3.8          1.9         0.4  setosa  45</code></pre>
+## 12          4.8         3.4          1.6         0.2  setosa  12
+## 14          4.3         3.0          1.1         0.1  setosa  14
+## 9           4.4         2.9          1.4         0.2  setosa   9
+## 27          5.0         3.4          1.6         0.4  setosa  27
+## 33          5.2         4.1          1.5         0.1  setosa  33
+## 22          5.1         3.7          1.5         0.4  setosa  22</code></pre>
 <p><br></p>
 </div>
 <div id="v-fold-cross-validation" class="section level3">
@@ -382,9 +404,9 @@ data_folds</code></pre>
 ## # A tibble: 5 × 2
 ##   splits          id   
 ##   &lt;list&gt;          &lt;chr&gt;
-## 1 &lt;split [88/24]&gt; Fold1
+## 1 &lt;split [89/23]&gt; Fold1
 ## 2 &lt;split [89/23]&gt; Fold2
-## 3 &lt;split [90/22]&gt; Fold3
+## 3 &lt;split [89/23]&gt; Fold3
 ## 4 &lt;split [90/22]&gt; Fold4
 ## 5 &lt;split [91/21]&gt; Fold5</code></pre>
 <p><br></p>

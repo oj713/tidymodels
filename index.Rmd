@@ -1,21 +1,25 @@
 ---
-title: "Overview"
+title: "Welcome!"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-library(tidymodels)
 ```
 
-[Tidymodels](https://www.tidymodels.org/) is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the [pipe operator](https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64).
+[Tidymodels](https://www.tidymodels.org/) is a collection of packages developed for modeling and machine learning. These packages simplify the task of fitting a model to data by providing tools to assist with data pre-proprocessing, model initiation, and results valiation. Tidymodels emphasizes simple, readable code by creating common interfaces 
 
-To use Tidymodels, simply install and load the `tidymodels` package. The `tidymodels` package loads all of its core modeling packages as well as some helpful `tidyverse` packages such as `dplyr` and `ggplot2`. For a complete list of packages loaded by Tidymodels, reference their [packages page](https://www.tidymodels.org/packages/).
+Tidymodels emphasizes simplicity and readability by abstracting complex modelling operations into common interfaces and optimizing functions for the [pipe operator](https://towardsdatascience.com/an-introduction-to-the-pipe-in-r-823090760d64).
+
+To use Tidymodels, simply install and load the `tidymodels` package. The `tidymodels` package loads all of its core modeling packages as well as some helpful `tidyverse` packages such as `dplyr` and `ggplot2`. Find a complete list of Tidymodels packages [here](https://www.tidymodels.org/packages/).  
 
 ```{r, eval=FALSE}
 library(tidymodels)
 ```
+
+<br>
+
+## Overview ##
 
 Each tab on this site corresponds to a different package from Tidymodels: 
 
@@ -24,32 +28,17 @@ Each tab on this site corresponds to a different package from Tidymodels:
 * [`Parsnip`](Parsnip.html) - Common, simple interface for model initiation
 * [`Yardstick`](Yardstick.html) - Evaluate model performance
 * [`Workflows`](Workflows.html) - Bundle recipes and models into a single object
-* [`Workflowsets`](WorkflowSets.html) - Create and compare sets of workflows
 * [`Tune`](Tune.html) - Tune hyperparameters for models 
+* [`Workflowsets`](WorkflowSets.html) - Create and compare sets of workflows
 
-Additionally, this page walks through some examples of modeling with tidymodels:
+These pages are meant to be read in order, as modelling examples are built cumulatively. To view abbreviated versions of the code through each tutorial, view the following tabs: 
 
-* [Iris](Iris.html) - Predicting Iris species from measurements.
-
-<br>
-
-### Dataset ###
-
-This site introduces the Tidymodels packages by walking through the complete modelling process with an example dataset, defined below. 
-
-`data_iris` is a modified version of the inbuilt `iris` dataset that includes row number as a variable. 
-```{r}
-data_iris <- bind_cols(all_of(iris), 
-                       row = 1:nrow(iris))
-
-head(data_iris)
-```
-
-Using this example dataset, we will predict `Species` based on the other variables (row is an identification variable and not used as a predictor). This modelling exercise spans across multiple pages on this site -- the complete code is aggregated at the [Iris modelling example](Iris.html). 
+* [Iris](Iris.html) - Predicting Iris species from their measurements.
+* [Cfin](Cfin.html) - Optimizing and comparing models of *C. Finmarchicus* abundance. 
 
 <br>
 
-### General Resources ###
+## General Resources ##
 
 * https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/ 
   * A simple walkthrough of some core Tidymodels packages and concepts. 
@@ -58,10 +47,10 @@ Using this example dataset, we will predict `Species` based on the other variabl
   
 <br>
   
-### About ###
+## About ##
 
 This site is authored by Omi Johnson and is meant to serve as an introductory walkthrough of Tidymodels. This site was built using RMarkdown and GitHub hosting -- find a simple walkthrough of how to build your own RMarkdown site [here](https://psyteachr.github.io/hack-your-data/rmarkdown_2.html). The source repository for this site is on my [GitHub](https://github.com/oj713/tidymodels).
 
-Questions? Contact me by email at **ojohnson@bigelow.org**
+Questions? Comments? Contact me by email at **ojohnson@bigelow.org**
 
 **NOTE**: This is not a comprehensive guide. These notes are incomplete and only mention methods/techniques that the author is familiar with. Descriptions of packages and methods most likely do not include all possible arguments or applications. For a complete list of each package's methods and capabilities, please look at the official documentation. 
