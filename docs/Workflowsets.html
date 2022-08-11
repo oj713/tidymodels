@@ -394,38 +394,38 @@ fitted_wkfs |&gt;
   collect_metrics() |&gt;
   head()</code></pre>
 <pre><code>## # A tibble: 6 × 9
-##   wflow_id  .config              preproc model       .metric .estimator  mean     n std_err
-##   &lt;chr&gt;     &lt;chr&gt;                &lt;chr&gt;   &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
-## 1 basic_rf  Preprocessor1_Model1 recipe  rand_forest mae     standard   0.867     5 0.00520
-## 2 basic_rf  Preprocessor1_Model1 recipe  rand_forest rmse    standard   1.20      5 0.0104 
-## 3 basic_rf  Preprocessor1_Model1 recipe  rand_forest rsq     standard   0.584     5 0.00435
-## 4 basic_brt Preprocessor1_Model1 recipe  boost_tree  mae     standard   0.889     5 0.00633
-## 5 basic_brt Preprocessor1_Model1 recipe  boost_tree  rmse    standard   1.22      5 0.0105 
-## 6 basic_brt Preprocessor1_Model1 recipe  boost_tree  rsq     standard   0.562     5 0.00490</code></pre>
+##   wflow_id  .config         preproc model .metric .estimator  mean     n std_err
+##   &lt;chr&gt;     &lt;chr&gt;           &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
+## 1 basic_rf  Preprocessor1_… recipe  rand… mae     standard   0.867     5 0.00520
+## 2 basic_rf  Preprocessor1_… recipe  rand… rmse    standard   1.20      5 0.0104 
+## 3 basic_rf  Preprocessor1_… recipe  rand… rsq     standard   0.584     5 0.00435
+## 4 basic_brt Preprocessor1_… recipe  boos… mae     standard   0.889     5 0.00633
+## 5 basic_brt Preprocessor1_… recipe  boos… rmse    standard   1.22      5 0.0105 
+## 6 basic_brt Preprocessor1_… recipe  boos… rsq     standard   0.562     5 0.00490</code></pre>
 <pre class="r"><code># determining the workflow with the best rmse
 fitted_wkfs |&gt;
   rank_results(rank_metric = &quot;rmse&quot;, select_best = FALSE)</code></pre>
 <pre><code>## # A tibble: 18 × 9
-##    wflow_id  .config              .metric  mean std_err     n preprocessor model        rank
-##    &lt;chr&gt;     &lt;chr&gt;                &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;       &lt;int&gt;
-##  1 basic_rf  Preprocessor1_Model1 mae     0.867 0.00520     5 recipe       rand_forest     1
-##  2 basic_rf  Preprocessor1_Model1 rmse    1.20  0.0104      5 recipe       rand_forest     1
-##  3 basic_rf  Preprocessor1_Model1 rsq     0.584 0.00435     5 recipe       rand_forest     1
-##  4 log_rf    Preprocessor1_Model1 mae     0.867 0.00520     5 recipe       rand_forest     2
-##  5 log_rf    Preprocessor1_Model1 rmse    1.20  0.0104      5 recipe       rand_forest     2
-##  6 log_rf    Preprocessor1_Model1 rsq     0.584 0.00437     5 recipe       rand_forest     2
-##  7 norm_rf   Preprocessor1_Model1 mae     0.867 0.00519     5 recipe       rand_forest     3
-##  8 norm_rf   Preprocessor1_Model1 rmse    1.20  0.0104      5 recipe       rand_forest     3
-##  9 norm_rf   Preprocessor1_Model1 rsq     0.584 0.00435     5 recipe       rand_forest     3
-## 10 basic_brt Preprocessor1_Model1 mae     0.889 0.00633     5 recipe       boost_tree      4
-## 11 basic_brt Preprocessor1_Model1 rmse    1.22  0.0105      5 recipe       boost_tree      4
-## 12 basic_brt Preprocessor1_Model1 rsq     0.562 0.00490     5 recipe       boost_tree      4
-## 13 log_brt   Preprocessor1_Model1 mae     0.889 0.00633     5 recipe       boost_tree      5
-## 14 log_brt   Preprocessor1_Model1 rmse    1.22  0.0105      5 recipe       boost_tree      5
-## 15 log_brt   Preprocessor1_Model1 rsq     0.562 0.00490     5 recipe       boost_tree      5
-## 16 norm_brt  Preprocessor1_Model1 mae     0.889 0.00633     5 recipe       boost_tree      6
-## 17 norm_brt  Preprocessor1_Model1 rmse    1.22  0.0105      5 recipe       boost_tree      6
-## 18 norm_brt  Preprocessor1_Model1 rsq     0.562 0.00489     5 recipe       boost_tree      6</code></pre>
+##    wflow_id  .config        .metric  mean std_err     n preprocessor model  rank
+##    &lt;chr&gt;     &lt;chr&gt;          &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;        &lt;chr&gt; &lt;int&gt;
+##  1 basic_rf  Preprocessor1… mae     0.867 0.00520     5 recipe       rand…     1
+##  2 basic_rf  Preprocessor1… rmse    1.20  0.0104      5 recipe       rand…     1
+##  3 basic_rf  Preprocessor1… rsq     0.584 0.00435     5 recipe       rand…     1
+##  4 log_rf    Preprocessor1… mae     0.867 0.00520     5 recipe       rand…     2
+##  5 log_rf    Preprocessor1… rmse    1.20  0.0104      5 recipe       rand…     2
+##  6 log_rf    Preprocessor1… rsq     0.584 0.00437     5 recipe       rand…     2
+##  7 norm_rf   Preprocessor1… mae     0.867 0.00519     5 recipe       rand…     3
+##  8 norm_rf   Preprocessor1… rmse    1.20  0.0104      5 recipe       rand…     3
+##  9 norm_rf   Preprocessor1… rsq     0.584 0.00435     5 recipe       rand…     3
+## 10 basic_brt Preprocessor1… mae     0.889 0.00633     5 recipe       boos…     4
+## 11 basic_brt Preprocessor1… rmse    1.22  0.0105      5 recipe       boos…     4
+## 12 basic_brt Preprocessor1… rsq     0.562 0.00490     5 recipe       boos…     4
+## 13 log_brt   Preprocessor1… mae     0.889 0.00633     5 recipe       boos…     5
+## 14 log_brt   Preprocessor1… rmse    1.22  0.0105      5 recipe       boos…     5
+## 15 log_brt   Preprocessor1… rsq     0.562 0.00490     5 recipe       boos…     5
+## 16 norm_brt  Preprocessor1… mae     0.889 0.00633     5 recipe       boos…     6
+## 17 norm_brt  Preprocessor1… rmse    1.22  0.0105      5 recipe       boos…     6
+## 18 norm_brt  Preprocessor1… rsq     0.562 0.00489     5 recipe       boos…     6</code></pre>
 <p><code>Workflowsets</code> also contains an <a href="https://workflowsets.tidymodels.org/reference/autoplot.workflow_set.html"><code>autoplot()</code></a> method to easily visualize results. <code>autoplot()</code> is capable of plotting both <code>rank_results()</code> as well as the results for individual workflows.</p>
 <ul>
 <li>When plotting entire workflow set, the x axis is the rank of the workflow. For more illustrative axes use <code>ggplot</code> methods on the output of <code>rank_results()</code>.</li>
