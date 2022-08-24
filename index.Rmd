@@ -41,7 +41,7 @@ These pages are meant to be read in order, as modelling examples are built cumul
 * https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/ 
   * A simple walkthrough of some core Tidymodels packages and concepts. 
 * https://www.tmwr.org/
-  * A highly detailed guidebook of Tidymodels and how to create accurate models. Much of this tutorial site is just a simplifed rehash of information from this guidebook -- if you want to take a deep dive into tuning and optimizing your model, I highly recommend going through this resource. 
+  * A highly detailed guidebook of Tidymodels and how to create accurate models. Much of this tutorial site is just a simplified rehash of information from this guidebook -- if you want to take a deep dive into tuning and optimizing your model, I highly recommend going through this resource.
   
 <br>
   
