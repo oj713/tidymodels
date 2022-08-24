@@ -21,7 +21,7 @@ library(tidymodels)
 
 Each tab on this site corresponds to a different package from Tidymodels: 
 
-* [`RSample`](RSample.html) - Re-sample and split training/testing data
+* [`RSample`](RSample.html) - Resample and split training/testing data
 * [`Recipes`](Recipes.html) - Create "pre-processing objects" that apply transformations to data 
 * [`Parsnip`](Parsnip.html) - Common, simple interface for model initiation
 * [`Yardstick`](Yardstick.html) - Evaluate model performance
@@ -29,7 +29,7 @@ Each tab on this site corresponds to a different package from Tidymodels:
 * [`Tune`](Tune.html) - Tune hyperparameters for models 
 * [`Workflowsets`](WorkflowSets.html) - Create and compare sets of workflows
 
-These pages are meant to be read in order, as modelling examples are built cumulatively. To view abbreviated versions of the code through each tutorial, view the following tabs: 
+These pages are meant to be read in order, as modeling examples are built cumulatively. To view abbreviated versions of the code through each tutorial, view the following tabs: 
 
 * [Iris](Iris.html) - Predicting Iris species from their measurements.
 * [Cfin](Cfin.html) - Optimizing and comparing models of *C. Finmarchicus* abundance. 
