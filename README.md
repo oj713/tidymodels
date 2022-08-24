@@ -4,4 +4,4 @@
 
 Compiled for the [Tandy Center of Ocean Forecasting](https://www.bigelow.org/services/ocean-forecasting/#:~:text=The%20Tandy%20Center%20for%20Ocean,management%2C%20communities%2C%20and%20education.) during Bigelow Laboratory Internship. 
 
-[bit.ly/tidymodels](www.bit.ly/tidymodels)
+[bit.ly/tidymodels](oj713.github.io/tidymodels)
