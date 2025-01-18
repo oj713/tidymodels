@@ -55,7 +55,7 @@ head(data_test)
 
 *If you are building your first model, skip this section!*
 
-When building a model, we usually want to estimate the performance of the model **before** evaluating it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. Learn to work with resamples in the [Tune](Tune.html) and [Workflowsets](WorkflowSets.html) tutorials. 
+When building a model, we usually want to estimate the performance of the model **before** evaluating it with the testing set. Resampling encompasses various techniques to split the training set so that we can estimate model performance prior to polishing and assessing with the testing set. Learn to work with resamples in the [Tune](Tune.html) and [Workflowsets](Workflowsets.html) tutorials. 
 
 <br>
 
